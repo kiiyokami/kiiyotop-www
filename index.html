@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kiiyo.top</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="/">kiiyo.top</a>
+      <nav class="header-nav">
+        <a href="https://music.kiiyo.top" target="_blank" rel="noopener">navidrome</a>
+        <a href="https://work.kiiyo.top" target="_blank" rel="noopener">work</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-glow"></div>
+      <p class="hero-pre">hello, i'm</p>
+      <h1 class="hero-name">kiiyo<span class="cursor">_</span></h1>
+      <p class="hero-sub">// gamer · reader · scrobbler</p>
+    </section>
+
+    <section class="grid">
+
+      <!-- Last.fm -->
+      <div class="card card--wide" id="card-lastfm">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5c-.828 0-1.5-.045-2.196-.36l-1.848-3.14-1.848 3.14C9.912 16.455 9.24 16.5 8.412 16.5 6.534 16.5 5 14.966 5 13.088s1.534-3.412 3.412-3.412c.61 0 1.183.162 1.676.446l.002.001 1.91 3.247 1.91-3.247c.493-.284 1.066-.446 1.676-.446C17.466 9.677 19 11.21 19 13.088S17.466 16.5 15.588 16.5H16.5z"/>
+            </svg>
+            <a class="service-name" href="https://www.last.fm/user/Kiiyo_" target="_blank" rel="noopener">last.fm</a>
+          </div>
+          <span class="pill" id="lastfm-pill">loading</span>
+        </div>
+        <div class="card-body lastfm-body">
+          <div class="lastfm-left">
+            <div class="now-playing" id="lastfm-np">
+              <div class="album-art skeleton-art" id="lastfm-art"></div>
+              <div class="track-info">
+                <span class="track-label" id="lastfm-label">— — —</span>
+                <span class="track-name skeleton-line wide" id="lastfm-track">loading...</span>
+                <span class="track-artist skeleton-line" id="lastfm-artist">...</span>
+              </div>
+            </div>
+            <div class="track-list" id="lastfm-recents"></div>
+            <div class="stats-row" id="lastfm-stats"></div>
+          </div>
+          <div class="lastfm-right">
+            <div class="section-label">top artists this month</div>
+            <div class="track-list" id="lastfm-artists"></div>
+            <div class="section-label">favorite genres</div>
+            <div class="genre-tags" id="lastfm-genres"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Steam -->
+      <div class="card" id="card-steam">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/>
+            </svg>
+            <a class="service-name" href="https://steamcommunity.com/profiles/76561198417657156" target="_blank" rel="noopener">steam</a>
+          </div>
+          <span class="pill" id="steam-pill">loading</span>
+        </div>
+        <div class="card-body" id="steam-body">
+          <div class="steam-status">
+            <div class="status-dot" id="steam-dot"></div>
+            <span id="steam-state">...</span>
+          </div>
+          <div class="current-game" id="steam-game"></div>
+          <div class="recent-games" id="steam-recent"></div>
+        </div>
+      </div>
+
+      <!-- CS2 / Leetify -->
+      <div class="card" id="card-cs2">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="10.5"/>
+              <line x1="12" y1="1.5" x2="12" y2="4.5"/><line x1="12" y1="19.5" x2="12" y2="22.5"/>
+              <line x1="1.5" y1="12" x2="4.5" y2="12"/><line x1="19.5" y1="12" x2="22.5" y2="12"/>
+            </svg>
+            <a class="service-name" href="https://leetify.com/app/profile/76561198417657156" target="_blank" rel="noopener">cs2</a>
+          </div>
+          <span class="pill pill--leetify">leetify</span>
+        </div>
+        <div class="card-body">
+          <div class="big-stat">
+            <span class="big-stat-value" id="cs2-rating">—</span>
+            <span class="big-stat-label">leetify rating</span>
+          </div>
+          <div class="stats-grid cs2-ranks" id="cs2-ranks"></div>
+          <div class="stats-grid" id="cs2-stats"></div>
+        </div>
+      </div>
+
+      <!-- VNDB -->
+      <div class="card card--wide" id="card-vndb">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <a class="service-name" href="https://vndb.org/u225866" target="_blank" rel="noopener">vndb</a>
+          </div>
+          <span class="pill" id="vndb-pill">loading</span>
+        </div>
+        <div class="card-body">
+          <div class="vn-reading" id="vndb-reading"></div>
+          <div class="stats-row" id="vndb-stats"></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>
+    <span>kiiyo · <a href="https://kiiyo.top">kiiyo.top</a></span>
+  </footer>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
