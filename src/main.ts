@@ -194,9 +194,11 @@ interface SteamPlayer {
   personastate: number       // 0=offline 1=online 2=busy 3=away 4=snooze
   gameextrainfo?: string
   gameid?: string
+  avatarmedium: string
 }
 
 interface SteamRecentGame {
+  appid: number
   name: string
   playtime_2weeks: number
   playtime_forever: number
@@ -208,29 +210,36 @@ const STEAM_STATE: Record<number, string> = {
 
 async function fetchSteam() {
   try {
-    const [summaryRes, recentRes] = await Promise.all([
+    const [summaryRes, recentRes, levelRes] = await Promise.all([
       fetch('/api/steam/summary'),
       fetch('/api/steam/recent'),
+      fetch('/api/steam/level'),
     ])
 
     const summary = await summaryRes.json()
     const recent  = await recentRes.json()
+    const levelData = await levelRes.json()
 
     const player: SteamPlayer = summary.response.players[0]
     const games: SteamRecentGame[] = recent.response?.games ?? []
-    renderSteam(player, games)
+    const level: number = levelData.response?.player_level ?? 0
+    renderSteam(player, games, level)
   } catch {
     renderSteamError('could not reach Steam API')
   }
 }
 
-function renderSteam(player: SteamPlayer, games: SteamRecentGame[]) {
+function renderSteam(player: SteamPlayer, games: SteamRecentGame[], level: number) {
   const state = STEAM_STATE[player.personastate] ?? 'offline'
   const isPlaying = !!player.gameextrainfo
   const dotClass = isPlaying ? 'playing' : state === 'online' ? 'online' : state === 'away' ? 'away' : ''
 
+  // Avatar
+  $('#steam-avatar').attr('src', player.avatarmedium).removeClass('hidden')
+
   $('#steam-dot').attr('class', `status-dot ${dotClass}`)
   $('#steam-state').text(player.personaname + ' · ' + (isPlaying ? `in-game` : state))
+  $('#steam-level').text(`lvl ${level}`)
   setPill('steam-pill', isPlaying ? 'in-game' : state, isPlaying ? 'pill--playing' : state === 'online' ? 'pill--online' : undefined)
 
   if (isPlaying) {
@@ -239,11 +248,16 @@ function renderSteam(player: SteamPlayer, games: SteamRecentGame[]) {
 
   const $recent = $('#steam-recent').empty()
   games.forEach(g => {
-    const hrs = (g.playtime_2weeks / 60).toFixed(2)
+    const hrs  = (g.playtime_2weeks / 60).toFixed(1)
+    const all  = (g.playtime_forever / 60).toFixed(0)
+    const thumb = `https://media.steampowered.com/steam/apps/${g.appid}/header.jpg`
     $recent.append(`
       <div class="game-item">
-        <span class="game-item-name">${g.name}</span>
-        <span class="game-item-hrs">${hrs}h this week</span>
+        <img class="game-thumb" src="${thumb}" alt="${g.name}">
+        <div class="game-item-info">
+          <span class="game-item-name">${g.name}</span>
+          <span class="game-item-hrs">${hrs}h this week · ${all}h total</span>
+        </div>
       </div>`)
   })
 }

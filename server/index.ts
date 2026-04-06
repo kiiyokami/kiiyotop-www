@@ -64,6 +64,14 @@ app.get('/api/steam/recent', async (_req, res) => {
   )
 })
 
+app.get('/api/steam/level', async (_req, res) => {
+  const key     = env('STEAM_API_KEY')
+  const steamId = env('STEAM_ID')
+  await proxy(res,
+    `https://api.steampowered.com/IPlayerService/GetSteamLevel/v1/?key=${key}&steamid=${steamId}&format=json`
+  )
+})
+
 // ── Leetify ────────────────────────────────────────────────────────────────
 app.get('/api/leetify', async (_req, res) => {
   const steamId = env('STEAM_ID')
