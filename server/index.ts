@@ -87,6 +87,46 @@ app.get('/api/leetify', async (_req, res) => {
 
 
 
+// ── osu! ──────────────────────────────────────────────────────────────────
+app.get('/api/osu/user', async (_req, res) => {
+  const key  = env('OSU_API_KEY')
+  const user = env('OSU_USER')
+  await proxy(res,
+    `https://osu.ppy.sh/api/get_user?k=${key}&u=${encodeURIComponent(user)}&m=0`
+  )
+})
+
+app.get('/api/osu/best', async (_req, res) => {
+  const key  = env('OSU_API_KEY')
+  const user = env('OSU_USER')
+  try {
+    const scoresRes = await fetch(
+      `https://osu.ppy.sh/api/get_user_best?k=${key}&u=${encodeURIComponent(user)}&m=0&limit=5`
+    )
+    const scores: { beatmap_id: string; pp: string; rank: string; maxcombo: string; enabled_mods: string }[] =
+      await scoresRes.json()
+
+    const beatmaps = await Promise.all(
+      scores.map(s =>
+        fetch(`https://osu.ppy.sh/api/get_beatmaps?k=${key}&b=${s.beatmap_id}`)
+          .then(r => r.json())
+          .then((maps: { title: string; artist: string; version: string }[]) => Array.isArray(maps) ? maps[0] : null)
+          .catch(() => null)
+      )
+    )
+
+    const enriched = scores.map((s, i) => ({
+      ...s,
+      title:   beatmaps[i]?.title   ?? '?',
+      artist:  beatmaps[i]?.artist  ?? '?',
+      version: beatmaps[i]?.version ?? '?',
+    }))
+    res.json(enriched)
+  } catch {
+    res.status(502).json({ error: 'upstream fetch failed' })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`kiiyo.top running on http://localhost:${PORT}`)
 })

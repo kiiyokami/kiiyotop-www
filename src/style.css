@@ -230,15 +230,15 @@ header {
 
 /* ── Grid ────────────────────────────────────────────────────────────────── */
 .grid {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 1.5rem 4rem;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--gap);
 }
 
-.card--wide { grid-column: 1 / -1; }
+.card--wide { grid-column: span 2; }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
 .card {
@@ -691,8 +691,87 @@ footer {
   border-top: 1px solid var(--border);
 }
 
+/* ── Brand accents ───────────────────────────────────────────────────────── */
+#card-lastfm  { border-top: 3px solid #d51007; }
+#card-steam   { border-top: 3px solid #66c0f4; }
+#card-cs2     { border-top: 3px solid #f4a21e; }
+#card-vndb    { border-top: 3px solid #3ab5e0; }
+#card-github  { border-top: 3px solid #8b5cf6; }
+#card-osu     { border-top: 3px solid #ff66ab; }
+
+#card-lastfm  .service-icon { color: #d51007; }
+#card-steam   .service-icon { color: #66c0f4; }
+#card-cs2     .service-icon { color: #f4a21e; }
+#card-vndb    .service-icon { color: #3ab5e0; }
+#card-github  .service-icon { color: #8b5cf6; }
+#card-osu     .service-icon { color: #ff66ab; }
+
+/* ── GitHub ──────────────────────────────────────────────────────────────── */
+.github-body {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.github-left {
+  width: 14rem;
+  flex-shrink: 0;
+}
+
+.github-right {
+  flex: 1 1 0;
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 1.25rem;
+}
+
+.github-stats {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.repo-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: .35rem; }
+
+.repo-item {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  padding: .35rem .5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background var(--t);
+}
+
+.repo-item:hover { background: var(--accent-soft); text-decoration: none; }
+
+.repo-name  { font-size: .85rem; font-weight: 600; color: var(--text); }
+.repo-desc  { font-size: .75rem; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.repo-meta  { display: flex; align-items: center; gap: .75rem; margin-top: .1rem; }
+.repo-lang  { display: flex; align-items: center; gap: .3rem; }
+.lang-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.lang-name  { font-size: .72rem; color: var(--text-muted); }
+.repo-stars { font-size: .72rem; color: var(--text-muted); }
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .grid { grid-template-columns: 1fr; padding-inline: 1rem; }
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; padding-inline: .75rem; }
   .card--wide { grid-column: 1; }
+
+  /* Last.fm: stack left/right vertically */
+  .lastfm-body { flex-direction: column; }
+  .lastfm-right { width: 100%; border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 1rem; }
+
+  /* GitHub: stack left/right vertically */
+  .github-body { flex-direction: column; }
+  .github-left { width: 100%; }
+  .github-right { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 1rem; }
+
+  /* Stats grids: 2 cols on mobile instead of default */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Hero tighten */
+  .hero { padding-block: 2.5rem 1.5rem; }
+  .hero-name { font-size: clamp(2.5rem, 12vw, 4rem); }
+
+  /* Header */
+  .header-inner { padding-inline: 1rem; }
 }

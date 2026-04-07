@@ -29,6 +29,8 @@ function loadAll() {
   fetchSteam()
   fetchLeetify()
   fetchVndb()
+  fetchGithub()
+  fetchOsu()
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -432,6 +434,181 @@ function renderVndb(reading: VndbListRes, finishedCount: string, wishlistCount: 
 function renderVndbError(msg: string) {
   $('#vndb-reading').html(`<p class="error-msg">${msg}</p>`)
   setPill('vndb-pill', 'error', 'pill--error')
+}
+
+// ── GitHub ────────────────────────────────────────────────────────────────
+const GITHUB_USER = 'kiiyokami'
+
+interface GithubProfile {
+  public_repos: number
+  followers:    number
+}
+
+interface GithubRepo {
+  name:              string
+  description:       string | null
+  language:          string | null
+  stargazers_count:  number
+  html_url:          string
+  fork:              boolean
+}
+
+const LANG_COLOR: Record<string, string> = {
+  Rust:       '#dea584',
+  TypeScript: '#3178c6',
+  JavaScript: '#f1e05a',
+  Python:     '#3572a5',
+  Go:         '#00add8',
+  CSS:        '#563d7c',
+  HTML:       '#e34c26',
+  Shell:      '#89e051',
+}
+
+async function fetchGithub() {
+  try {
+    const [profileRes, reposRes] = await Promise.all([
+      fetch(`https://api.github.com/users/${GITHUB_USER}`),
+      fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&per_page=10`),
+    ])
+    if (!profileRes.ok) throw new Error()
+    const profile: GithubProfile = await profileRes.json()
+    const repos:   GithubRepo[]  = await reposRes.json()
+    renderGithub(profile, repos)
+  } catch {
+    renderGithubError('could not reach GitHub')
+  }
+}
+
+function renderGithub(profile: GithubProfile, repos: GithubRepo[]) {
+  setPill('github-pill', `${profile.public_repos} repos`)
+
+  $('#github-stats').html(
+    statCell('repos',     profile.public_repos) +
+    statCell('followers', profile.followers)
+  )
+
+  // Derive top languages from repos
+  const langCounts: Record<string, number> = {}
+  repos.forEach(r => {
+    if (r.language) langCounts[r.language] = (langCounts[r.language] ?? 0) + 1
+  })
+  const topLangs = Object.entries(langCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([lang]) => lang)
+
+  $('#github-langs').html(
+    topLangs.map(lang => {
+      const color = LANG_COLOR[lang] ?? '#888'
+      return `<span class="genre-tag" style="border-left:3px solid ${color};">${lang}</span>`
+    }).join('')
+  )
+
+  const $list = $('#github-repos').empty()
+  repos.filter(r => !r.fork).slice(0, 8).forEach(repo => {
+    const lang = repo.language
+    const dot  = lang
+      ? `<span class="lang-dot" style="background:${LANG_COLOR[lang] ?? '#888'}"></span><span class="lang-name">${lang}</span>`
+      : ''
+    const stars = repo.stargazers_count > 0
+      ? `<span class="repo-stars">★ ${repo.stargazers_count}</span>`
+      : ''
+    $list.append(`
+      <a class="repo-item" href="${repo.html_url}" target="_blank" rel="noopener">
+        <span class="repo-name">${repo.name}</span>
+        ${repo.description ? `<span class="repo-desc">${repo.description}</span>` : ''}
+        <div class="repo-meta">
+          <span class="repo-lang">${dot}</span>
+          ${stars}
+        </div>
+      </a>`)
+  })
+}
+
+function renderGithubError(msg: string) {
+  $('#github-repos').html(`<p class="error-msg">${msg}</p>`)
+  setPill('github-pill', 'error', 'pill--error')
+}
+
+// ── osu! ──────────────────────────────────────────────────────────────────
+interface OsuUser {
+  username:         string
+  pp_raw:           string
+  pp_rank:          string
+  pp_country_rank:  string
+  accuracy:         string
+  playcount:        string
+  level:            string
+  count_rank_ss:    string
+  count_rank_s:     string
+  count_rank_a:     string
+  country:          string
+}
+
+interface OsuScore {
+  beatmap_id: string
+  pp:         string
+  rank:       string
+  maxcombo:   string
+  title:      string
+  artist:     string
+  version:    string
+}
+
+const OSU_RANK_COLOR: Record<string, string> = {
+  XH: '#d4d4d4', X: '#ffcc22', SH: '#d4d4d4', S: '#ffcc22', A: '#88dd44', B: '#4488ff', C: '#ff88aa', D: '#ff4444',
+}
+
+async function fetchOsu() {
+  try {
+    const [userRes, bestRes] = await Promise.all([
+      fetch('/api/osu/user'),
+      fetch('/api/osu/best'),
+    ])
+    if (!userRes.ok || !bestRes.ok) throw new Error()
+    const users: OsuUser[] = await userRes.json()
+    const best:  OsuScore[] = await bestRes.json()
+    renderOsu(users[0], best)
+  } catch {
+    renderOsuError('could not reach osu!')
+  }
+}
+
+function renderOsu(user: OsuUser, best: OsuScore[]) {
+  const pp  = Math.round(Number(user.pp_raw)).toLocaleString()
+  const acc = Number(user.accuracy).toFixed(2) + '%'
+
+  setPill('osu-pill', `#${Number(user.pp_rank).toLocaleString()}`)
+  $('#osu-pp').text(pp + 'pp')
+
+  $('#osu-stats').html(
+    statCell('global rank',  '#' + Number(user.pp_rank).toLocaleString()) +
+    statCell('country rank', '#' + Number(user.pp_country_rank).toLocaleString()) +
+    statCell('accuracy',     acc) +
+    statCell('level',        Math.floor(Number(user.level)).toString()) +
+    statCell('playcount',    Number(user.playcount).toLocaleString()) +
+    statCell('SS / S / A',  `${user.count_rank_ss}/${user.count_rank_s}/${user.count_rank_a}`)
+  )
+
+  const $best = $('#osu-best').empty()
+  best.slice(0, 5).forEach((s, i) => {
+    const pp    = Math.round(Number(s.pp))
+    const rank  = s.rank
+    const color = OSU_RANK_COLOR[rank] ?? '#888'
+    $best.append(`
+      <div class="track-item">
+        <span class="track-item-num">${i + 1}</span>
+        <span class="track-item-name">${s.title}</span>
+        <span class="track-item-sep">—</span>
+        <span style="color:${color};font-weight:700;margin-right:.25rem;">${rank}</span><span>${pp}pp</span>
+      </div>`)
+  })
+}
+
+function renderOsuError(msg: string) {
+  $('#osu-pp').text('—')
+  $('#osu-stats').html(`<p class="error-msg">${msg}</p>`)
+  setPill('osu-pill', 'error', 'pill--error')
 }
 
 // ── Poll Last.fm every 30s for live now-playing updates ───────────────────

@@ -36,12 +36,12 @@
       <div class="hero-glow"></div>
       <p class="hero-pre">hello, i'm</p>
       <h1 class="hero-name">kiiyo<span class="cursor">_</span></h1>
-      <p class="hero-sub">// gamer · reader · scrobbler</p>
+      <p class="hero-sub">// gamer · scrobbler</p>
     </section>
 
     <section class="grid">
 
-      <!-- Last.fm -->
+      <!-- Last.fm — spans 2 cols -->
       <div class="card card--wide" id="card-lastfm">
         <div class="card-header">
           <div class="card-title-row">
@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <!-- Steam -->
+      <!-- Steam — 1 col -->
       <div class="card" id="card-steam">
         <div class="card-header">
           <div class="card-title-row">
@@ -101,7 +101,7 @@
         </div>
       </div>
 
-      <!-- CS2 / Leetify -->
+      <!-- CS2 / Leetify — 1 col -->
       <div class="card" id="card-cs2">
         <div class="card-header">
           <div class="card-title-row">
@@ -124,7 +124,7 @@
         </div>
       </div>
 
-      <!-- VNDB -->
+      <!-- VNDB — spans 2 cols -->
       <div class="card card--wide" id="card-vndb">
         <div class="card-header">
           <div class="card-title-row">
@@ -140,6 +140,53 @@
           <div class="stats-row" id="vndb-stats"></div>
         </div>
       </div>
+
+      <!-- osu! — 1 col -->
+      <div class="card" id="card-osu">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 21.25c-5.108 0-9.25-4.142-9.25-9.25S6.892 2.75 12 2.75s9.25 4.142 9.25 9.25-4.142 9.25-9.25 9.25zm0-15a5.75 5.75 0 1 0 0 11.5 5.75 5.75 0 0 0 0-11.5zm0 9a3.25 3.25 0 1 1 0-6.5 3.25 3.25 0 0 1 0 6.5z"/>
+            </svg>
+            <a class="service-name" href="https://osu.ppy.sh/users/-Flux" target="_blank" rel="noopener">osu!</a>
+          </div>
+          <span class="pill" id="osu-pill">loading</span>
+        </div>
+        <div class="card-body">
+          <div class="big-stat">
+            <span class="big-stat-value" id="osu-pp">—</span>
+            <span class="big-stat-label">performance points</span>
+          </div>
+          <div class="stats-grid" id="osu-stats"></div>
+          <div class="section-label" style="margin-top:.75rem;">top plays</div>
+          <div class="track-list" id="osu-best"></div>
+        </div>
+      </div>
+
+      <!-- GitHub — spans 2 cols -->
+      <div class="card card--wide" id="card-github">
+        <div class="card-header">
+          <div class="card-title-row">
+            <svg class="service-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+            </svg>
+            <a class="service-name" href="https://github.com/kiiyokami" target="_blank" rel="noopener">github</a>
+          </div>
+          <span class="pill" id="github-pill">loading</span>
+        </div>
+        <div class="card-body github-body">
+          <div class="github-left">
+            <div class="stats-grid github-stats" id="github-stats"></div>
+            <div class="section-label" style="margin-top:.75rem;">languages</div>
+            <div class="genre-tags" id="github-langs"></div>
+          </div>
+          <div class="github-right">
+            <div class="section-label">recent work</div>
+            <div class="repo-list" id="github-repos"></div>
+          </div>
+        </div>
+      </div>
+
 
     </section>
   </main>
