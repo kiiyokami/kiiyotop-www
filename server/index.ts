@@ -72,6 +72,20 @@ app.get('/api/steam/level', async (_req, res) => {
   )
 })
 
+app.get('/api/steam/friends', async (_req, res) => {
+  const key     = env('STEAM_API_KEY')
+  const steamId = env('STEAM_ID')
+  await proxy(res,
+    `https://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${key}&steamid=${steamId}&relationship=friend&format=json`
+  )
+})
+
+// ── Discord / Lanyard ──────────────────────────────────────────────────────
+app.get('/api/discord', async (_req, res) => {
+  const userId = env('DISCORD_USER_ID')
+  await proxy(res, `https://api.lanyard.rest/v1/users/${userId}`)
+})
+
 // ── Leetify ────────────────────────────────────────────────────────────────
 app.get('/api/leetify', async (_req, res) => {
   const steamId = env('STEAM_ID')

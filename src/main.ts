@@ -31,6 +31,7 @@ function loadAll() {
   fetchVndb()
   fetchGithub()
   fetchOsu()
+  fetchDiscord()
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -212,26 +213,29 @@ const STEAM_STATE: Record<number, string> = {
 
 async function fetchSteam() {
   try {
-    const [summaryRes, recentRes, levelRes] = await Promise.all([
+    const [summaryRes, recentRes, levelRes, friendsRes] = await Promise.all([
       fetch('/api/steam/summary'),
       fetch('/api/steam/recent'),
       fetch('/api/steam/level'),
+      fetch('/api/steam/friends'),
     ])
 
-    const summary = await summaryRes.json()
-    const recent  = await recentRes.json()
-    const levelData = await levelRes.json()
+    const summary     = await summaryRes.json()
+    const recent      = await recentRes.json()
+    const levelData   = await levelRes.json()
+    const friendsData = friendsRes.ok ? await friendsRes.json() : null
 
-    const player: SteamPlayer = summary.response.players[0]
+    const player: SteamPlayer      = summary.response.players[0]
     const games: SteamRecentGame[] = recent.response?.games ?? []
-    const level: number = levelData.response?.player_level ?? 0
-    renderSteam(player, games, level)
+    const level: number            = levelData.response?.player_level ?? 0
+    const friendCount: number      = friendsData?.friendslist?.friends?.length ?? 0
+    renderSteam(player, games, level, friendCount)
   } catch {
     renderSteamError('could not reach Steam API')
   }
 }
 
-function renderSteam(player: SteamPlayer, games: SteamRecentGame[], level: number) {
+function renderSteam(player: SteamPlayer, games: SteamRecentGame[], level: number, friendCount: number) {
   const state = STEAM_STATE[player.personastate] ?? 'offline'
   const isPlaying = !!player.gameextrainfo
   const dotClass = isPlaying ? 'playing' : state === 'online' ? 'online' : state === 'away' ? 'away' : ''
@@ -241,7 +245,7 @@ function renderSteam(player: SteamPlayer, games: SteamRecentGame[], level: numbe
 
   $('#steam-dot').attr('class', `status-dot ${dotClass}`)
   $('#steam-state').text(player.personaname + ' · ' + (isPlaying ? `in-game` : state))
-  $('#steam-level').text(`lvl ${level}`)
+  $('#steam-level').text(`lvl ${level}${friendCount > 0 ? ` · ${friendCount} friends` : ''}`)
   setPill('steam-pill', isPlaying ? 'in-game' : state, isPlaying ? 'pill--playing' : state === 'online' ? 'pill--online' : undefined)
 
   if (isPlaying) {
@@ -417,7 +421,6 @@ function renderVndb(reading: VndbListRes, finishedCount: string, wishlistCount: 
         <div class="vn-item">
           ${img}
           <div class="vn-meta">
-            <span class="vn-status">currently reading</span>
             <span class="vn-title">${vn.title}</span>
             ${dev ? `<span class="vn-developer">${dev}</span>` : ''}
           </div>
@@ -609,6 +612,70 @@ function renderOsuError(msg: string) {
   $('#osu-pp').text('—')
   $('#osu-stats').html(`<p class="error-msg">${msg}</p>`)
   setPill('osu-pill', 'error', 'pill--error')
+}
+
+// ── Discord / Lanyard ─────────────────────────────────────────────────────
+interface LanternActivity {
+  type:     number
+  name:     string
+  state?:   string
+  details?: string
+  emoji?:   { name: string }
+  timestamps?: { start?: number; end?: number }
+}
+
+interface LanternData {
+  discord_user: {
+    username:     string
+    global_name:  string | null
+    avatar:       string | null
+    id:           string
+  }
+  discord_status: 'online' | 'idle' | 'dnd' | 'offline'
+  activities:     LanternActivity[]
+  active_on_discord_web:     boolean
+  active_on_discord_desktop: boolean
+  active_on_discord_mobile:  boolean
+  spotify: null | {
+    song:          string
+    artist:        string
+    album_art_url: string
+  }
+}
+
+const DISCORD_STATUS_DOT: Record<string, string> = {
+  online: 'online', idle: 'away', dnd: 'dnd', offline: '',
+}
+
+const DISCORD_STATUS_LABEL: Record<string, string> = {
+  online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline',
+}
+
+async function fetchDiscord() {
+  try {
+    const res = await fetch('/api/discord')
+    if (!res.ok) { renderDiscordError('could not reach Discord'); return }
+    const json = await res.json()
+    if (!json.success) { renderDiscordError('Lanyard error'); return }
+    renderDiscord(json.data as LanternData)
+  } catch {
+    renderDiscordError('could not reach Discord')
+  }
+}
+
+function renderDiscord(data: LanternData) {
+  const user   = data.discord_user
+  const status = data.discord_status
+  const name   = user.global_name ?? user.username
+
+  $('#discord-dot').attr('class', `status-dot ${DISCORD_STATUS_DOT[status] ?? ''}`)
+  $('#discord-name').text(name)
+  $('#discord-badge').attr('title', `${name} · ${DISCORD_STATUS_LABEL[status] ?? 'offline'}`)
+}
+
+function renderDiscordError(_msg: string) {
+  $('#discord-dot').attr('class', 'status-dot')
+  $('#discord-name').text('—')
 }
 
 // ── Poll Last.fm every 30s for live now-playing updates ───────────────────

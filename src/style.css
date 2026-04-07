@@ -1,3 +1,6 @@
+/* ── Nunito ──────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+
 /* ── Victor Mono ─────────────────────────────────────────────────────────── */
 @font-face {
   font-family: 'Victor Mono';
@@ -88,7 +91,7 @@
 html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
-  font-family: 'Victor Mono', ui-monospace, 'Cascadia Code', monospace;
+  font-family: 'Nunito', 'Victor Mono', ui-sans-serif, sans-serif;
   background-color: var(--bg);
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
@@ -150,6 +153,7 @@ header {
 
 .header-nav a:hover { color: var(--accent); }
 
+
 /* ── Theme toggle ────────────────────────────────────────────────────────── */
 .theme-toggle {
   background: none;
@@ -202,6 +206,7 @@ header {
 }
 
 .hero-name {
+  font-family: 'Victor Mono', monospace;
   font-size: clamp(3rem, 10vw, 6.5rem);
   font-weight: 700;
   color: var(--text);
@@ -228,6 +233,27 @@ header {
   letter-spacing: .05em;
 }
 
+.discord-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: .9rem;
+  font-size: .78rem;
+  color: var(--text-2);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .28rem .85rem .28rem .65rem;
+  cursor: default;
+}
+
+.discord-icon {
+  width: 14px;
+  height: 14px;
+  color: #5865f2;
+  flex-shrink: 0;
+}
+
 /* ── Grid ────────────────────────────────────────────────────────────────── */
 .grid {
   max-width: 1100px;
@@ -239,6 +265,7 @@ header {
 }
 
 .card--wide { grid-column: span 2; }
+.card--full { grid-column: span 3; }
 
 /* ── Card ────────────────────────────────────────────────────────────────── */
 .card {
@@ -474,6 +501,7 @@ a.service-name:hover { color: var(--accent); }
 .status-dot.online  { background: var(--dot-on);  box-shadow: 0 0 6px var(--dot-on); }
 .status-dot.away    { background: var(--dot-away); box-shadow: 0 0 6px var(--dot-away); }
 .status-dot.playing { background: #60a5fa;         box-shadow: 0 0 6px #60a5fa; }
+.status-dot.dnd     { background: #f87171;         box-shadow: 0 0 6px #f87171; }
 
 .current-game {
   font-size: .85rem;
@@ -524,6 +552,7 @@ a.service-name:hover { color: var(--accent); }
 }
 
 .big-stat-value {
+  font-family: 'Victor Mono', monospace;
   font-size: 3rem;
   font-weight: 700;
   color: var(--accent);
@@ -567,6 +596,7 @@ a.service-name:hover { color: var(--accent); }
 .stat-cell:hover { border-color: var(--border-h); }
 
 .stat-value {
+  font-family: 'Victor Mono', monospace;
   display: block;
   font-size: 1.05rem;
   font-weight: 700;
@@ -609,7 +639,7 @@ a.service-name:hover { color: var(--accent); }
   font-size: 1.2rem;
 }
 
-.vn-meta { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+.vn-meta { display: flex; flex-direction: column; gap: .2rem; min-width: 0; justify-content: center; }
 
 .vn-status {
   font-size: .65rem;
@@ -698,6 +728,8 @@ footer {
 #card-vndb    { border-top: 3px solid #3ab5e0; }
 #card-github  { border-top: 3px solid #8b5cf6; }
 #card-osu     { border-top: 3px solid #ff66ab; }
+#card-discord { border-top: 3px solid #5865f2; }
+#card-discord .card-body { padding: .75rem 1rem; }
 
 #card-lastfm  .service-icon { color: #d51007; }
 #card-steam   .service-icon { color: #66c0f4; }
@@ -705,6 +737,7 @@ footer {
 #card-vndb    .service-icon { color: #3ab5e0; }
 #card-github  .service-icon { color: #8b5cf6; }
 #card-osu     .service-icon { color: #ff66ab; }
+#card-discord .service-icon { color: #5865f2; }
 
 /* ── GitHub ──────────────────────────────────────────────────────────────── */
 .github-body {
@@ -728,7 +761,7 @@ footer {
   grid-template-columns: repeat(2, 1fr);
 }
 
-.repo-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: .35rem; }
+.repo-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: .35rem; align-items: start; }
 
 .repo-item {
   display: flex;
@@ -738,11 +771,12 @@ footer {
   border-radius: 6px;
   text-decoration: none;
   transition: background var(--t);
+  min-width: 0;
 }
 
 .repo-item:hover { background: var(--accent-soft); text-decoration: none; }
 
-.repo-name  { font-size: .85rem; font-weight: 600; color: var(--text); }
+.repo-name  { font-size: .85rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .repo-desc  { font-size: .75rem; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .repo-meta  { display: flex; align-items: center; gap: .75rem; margin-top: .1rem; }
@@ -750,6 +784,99 @@ footer {
 .lang-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .lang-name  { font-size: .72rem; color: var(--text-muted); }
 .repo-stars { font-size: .72rem; color: var(--text-muted); }
+
+/* ── Discord ─────────────────────────────────────────────────────────────── */
+.discord-body { display: flex; flex-direction: column; gap: .55rem; }
+
+.discord-profile {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.discord-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #5865f2;
+  flex-shrink: 0;
+}
+.discord-avatar.hidden { display: none; }
+
+.discord-info { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+
+.discord-name-row { display: flex; align-items: center; gap: .4rem; }
+
+.discord-name {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discord-custom {
+  font-size: .72rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discord-activity {
+  padding: .35rem .55rem;
+  border-radius: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+}
+.discord-activity:empty { display: none; }
+
+.discord-act-type {
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+}
+.discord-act-name {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.discord-act-detail {
+  font-size: .7rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── osu! wide layout ────────────────────────────────────────────────────── */
+.osu-body {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.osu-left {
+  width: 16rem;
+  flex-shrink: 0;
+}
+
+.osu-right {
+  flex: 1 1 0;
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  padding-left: 1.25rem;
+}
+
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
