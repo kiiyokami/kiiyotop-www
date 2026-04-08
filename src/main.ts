@@ -366,10 +366,10 @@ function renderLeetify(data: LeetifyProfile) {
   )
 
   $('#cs2-stats').html(
-    statCell('aim',      r.aim.toFixed(2)) +
-    statCell('utility',  r.utility.toFixed(2)) +
-    statCell('position', r.positioning.toFixed(2)) +
-    statCell('opening',  r.opening.toFixed(2)) +
+    statCell('aim',         r.aim.toFixed(2)) +
+    statCell('utility',     r.utility.toFixed(2)) +
+    statCell('positioning', r.positioning.toFixed(2)) +
+    statCell('clutch',      r.clutch.toFixed(2)) +
     statCell('hs%',      hs) +
     statCell('win rate', winPct) +
     statCell('matches',  data.total_matches)
