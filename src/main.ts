@@ -369,7 +369,8 @@ function renderLeetify(data: LeetifyProfile) {
     statCell('aim',         r.aim.toFixed(2)) +
     statCell('utility',     r.utility.toFixed(2)) +
     statCell('positioning', r.positioning.toFixed(2)) +
-    statCell('clutch',      r.clutch.toFixed(2)) +
+    statCell('opening',     (r.opening * 100).toFixed(2)) +
+    statCell('clutch',      (r.clutch * 100).toFixed(2)) +
     statCell('hs%',      hs) +
     statCell('win rate', winPct) +
     statCell('matches',  data.total_matches)
