@@ -21,6 +21,12 @@ $(() => {
     localStorage.setItem(THEME_KEY, next)
   })
 
+  // Whole-card click → open profile, unless user clicked an inner <a>
+  $(document).on('click', '.card[data-href]', function (e) {
+    if ($(e.target).closest('a').length) return
+    window.open($(this).data('href') as string, '_blank', 'noopener,noreferrer')
+  })
+
   loadAll()
 })
 
@@ -80,15 +86,23 @@ interface LastfmTopArtistsRes {
   }
 }
 
+interface LastfmTopTracksRes {
+  toptracks: {
+    track: { name: string; artist: { name: string }; playcount: string }[]
+  }
+}
+
 async function fetchLastfm() {
   try {
-    const [recentRes, artistsRes] = await Promise.all([
+    const [recentRes, artistsRes, tracksRes] = await Promise.all([
       fetch('/api/lastfm/recent'),
       fetch('/api/lastfm/topartists'),
+      fetch('/api/lastfm/toptracks'),
     ])
     if (!recentRes.ok) throw new Error(`${recentRes.status}`)
     const data: LastfmRecentRes            = await recentRes.json()
     const artistsData: LastfmTopArtistsRes = await artistsRes.json()
+    const tracksData: LastfmTopTracksRes   = await tracksRes.json()
 
     // Fetch tags for top 3 artists to derive genres
     const topArtists = artistsData.topartists.artist.slice(0, 3)
@@ -110,13 +124,13 @@ async function fetchLastfm() {
       .slice(0, 8)
       .map(([name]) => name)
 
-    renderLastfm(data, artistsData, genres)
+    renderLastfm(data, artistsData, tracksData, genres)
   } catch (e) {
     renderLastfmError('could not reach last.fm')
   }
 }
 
-function renderLastfm(data: LastfmRecentRes, artistsData: LastfmTopArtistsRes, genres: string[]) {
+function renderLastfm(data: LastfmRecentRes, artistsData: LastfmTopArtistsRes, tracksData: LastfmTopTracksRes, genres: string[]) {
   const tracks = data.recenttracks.track
   const total  = Number(data.recenttracks['@attr'].total).toLocaleString()
   const first  = tracks[0]
@@ -127,7 +141,7 @@ function renderLastfm(data: LastfmRecentRes, artistsData: LastfmTopArtistsRes, g
   const $art = $('#lastfm-art')
 
   if (art && !art.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
-    $art.replaceWith(`<img class="album-art" src="${art}" alt="album art">`)
+    $art.replaceWith(`<img class="album-art" src="${art}" alt="album art" loading="lazy">`)
   } else {
     $art.removeClass('skeleton-art').css({ background: 'var(--skeleton)', animation: 'none' })
   }
@@ -175,6 +189,21 @@ function renderLastfm(data: LastfmRecentRes, artistsData: LastfmTopArtistsRes, g
         <span class="track-item-name">${a.name}</span>
         <span class="track-item-sep">—</span>
         <span>${Number(a.playcount).toLocaleString()} plays</span>
+      </div>`)
+  })
+
+  // Top tracks this month
+  const topTracks = tracksData.toptracks?.track?.slice(0, 5) ?? []
+  const $tracks = $('#lastfm-tracks').empty()
+  topTracks.forEach((t, i) => {
+    $tracks.append(`
+      <div class="track-item">
+        <span class="track-item-num">${i + 1}</span>
+        <span class="track-item-name">${t.name}</span>
+        <span class="track-item-sep">·</span>
+        <span class="track-item-artist">${t.artist.name}</span>
+        <span class="track-item-sep">—</span>
+        <span>${Number(t.playcount).toLocaleString()}×</span>
       </div>`)
   })
 }
@@ -259,7 +288,7 @@ function renderSteam(player: SteamPlayer, games: SteamRecentGame[], level: numbe
     const thumb = `https://media.steampowered.com/steam/apps/${g.appid}/header.jpg`
     $recent.append(`
       <div class="game-item">
-        <img class="game-thumb" src="${thumb}" alt="${g.name}">
+        <img class="game-thumb" src="${thumb}" alt="${g.name}" loading="lazy">
         <div class="game-item-info">
           <span class="game-item-name">${g.name}</span>
           <span class="game-item-hrs">${hrs}h this week · ${all}h total</span>
@@ -362,6 +391,7 @@ interface VndbListEntry {
     developers?: { name: string }[]
   }
   labels: { label: string }[]
+  vote?: number
 }
 
 interface VndbListRes {
@@ -379,30 +409,36 @@ async function fetchVndb() {
       body: JSON.stringify({ user: VNDB_USER, ...body }),
     })
 
-    const readingRes = await post({
-      filters: ['label', '=', 1],
-      fields: 'vn{id,title,image{url},developers{name}}',
-      results: 3,
-    })
-
-    const [finishedRes, wishlistRes] = await Promise.all([
+    const [readingRes, finishedRes, wishlistRes, allRes] = await Promise.all([
+      post({ filters: ['label', '=', 1], fields: 'vn{id,title,image{url},developers{name}}', results: 3 }),
       post({ filters: ['label', '=', 2], results: 100 }),
       post({ filters: ['label', '=', 5], results: 100 }),
+      post({ fields: 'vn{id,title,image{url}},vote', results: 100 }),
     ])
 
     const reading: VndbListRes  = await readingRes.json()
     const finished: VndbListRes = await finishedRes.json()
     const wishlist: VndbListRes = await wishlistRes.json()
+    const allEntries: VndbListRes = await allRes.json()
+
+    // Filter to voted entries and sort by vote descending
+    const rated: VndbListRes = {
+      results: allEntries.results
+        .filter(e => e.vote != null)
+        .sort((a, b) => (b.vote ?? 0) - (a.vote ?? 0))
+        .slice(0, 7),
+      more: false,
+    }
 
     const finishedCount = finished.results.length + (finished.more ? '+' : '')
     const wishlistCount = wishlist.results.length + (wishlist.more ? '+' : '')
-    renderVndb(reading, String(finishedCount), String(wishlistCount))
+    renderVndb(reading, rated, String(finishedCount), String(wishlistCount))
   } catch {
     renderVndbError('could not reach VNDB')
   }
 }
 
-function renderVndb(reading: VndbListRes, finishedCount: string, wishlistCount: string) {
+function renderVndb(reading: VndbListRes, rated: VndbListRes, finishedCount: string, wishlistCount: string) {
   const readingCount = reading.results.length + (reading.more ? '+' : '')
   setPill('vndb-pill', `${readingCount} reading`)
 
@@ -414,7 +450,7 @@ function renderVndb(reading: VndbListRes, finishedCount: string, wishlistCount: 
       const vn  = entry.vn
       const dev = vn.developers?.[0]?.name ?? ''
       const img = vn.image?.url
-        ? `<img class="vn-cover" src="${vn.image.url}" alt="${vn.title}">`
+        ? `<img class="vn-cover" src="${vn.image.url}" alt="${vn.title}" loading="lazy">`
         : `<div class="vn-cover-placeholder">📖</div>`
 
       $reading.append(`
@@ -432,6 +468,23 @@ function renderVndb(reading: VndbListRes, finishedCount: string, wishlistCount: 
     statBadge('finished',  finishedCount) +
     statBadge('wishlist',  wishlistCount)
   )
+
+  // Top rated
+  const $rated = $('#vndb-rated').empty()
+  rated.results.forEach((entry, i) => {
+    const vn    = entry.vn
+    const score = ((entry.vote ?? 0) / 10).toFixed(1)
+    const img   = vn.image?.url
+      ? `<img class="vn-thumb" src="${vn.image.url}" alt="${vn.title}" loading="lazy">`
+      : `<div class="vn-thumb vn-thumb--placeholder"></div>`
+    $rated.append(`
+      <div class="vn-rated-item">
+        <span class="track-item-num">${i + 1}</span>
+        ${img}
+        <span class="vn-rated-title">${vn.title}</span>
+        <span class="vn-rated-score">${score}</span>
+      </div>`)
+  })
 }
 
 function renderVndbError(msg: string) {
@@ -671,6 +724,24 @@ function renderDiscord(data: LanternData) {
   $('#discord-dot').attr('class', `status-dot ${DISCORD_STATUS_DOT[status] ?? ''}`)
   $('#discord-name').text(name)
   $('#discord-badge').attr('title', `${name} · ${DISCORD_STATUS_LABEL[status] ?? 'offline'}`)
+
+  // Show live activity: Spotify > game > custom status
+  const $act = $('#discord-activity')
+  if (data.spotify) {
+    const s = data.spotify
+    $act.html(`<span class="discord-activity-icon">♪</span><span>${s.song} · ${s.artist}</span>`).show()
+  } else {
+    const game    = data.activities.find(a => a.type === 0)
+    const custom  = data.activities.find(a => a.type === 4)
+    if (game) {
+      $act.html(`<span class="discord-activity-icon">🎮</span><span>${game.name}</span>`).show()
+    } else if (custom?.state) {
+      const emoji = custom.emoji?.name ? `${custom.emoji.name} ` : ''
+      $act.html(`<span>${emoji}${custom.state}</span>`).show()
+    } else {
+      $act.hide()
+    }
+  }
 }
 
 function renderDiscordError(_msg: string) {

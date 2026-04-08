@@ -38,6 +38,14 @@ app.get('/api/lastfm/topartists', async (_req, res) => {
   )
 })
 
+app.get('/api/lastfm/toptracks', async (_req, res) => {
+  const key  = env('LASTFM_API_KEY')
+  const user = env('LASTFM_USER')
+  await proxy(res,
+    `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${user}&api_key=${key}&limit=5&period=1month&format=json`
+  )
+})
+
 app.get('/api/lastfm/artisttags', async (req, res) => {
   const key    = env('LASTFM_API_KEY')
   const artist = req.query.artist as string
