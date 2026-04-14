@@ -737,8 +737,7 @@ function renderDiscord(data: LanternData) {
     if (game) {
       $act.html(`<span class="discord-activity-icon">🎮</span><span>${game.name}</span>`).show()
     } else if (custom?.state) {
-      const emoji = custom.emoji?.name ? `${custom.emoji.name} ` : ''
-      $act.html(`<span>${emoji}${custom.state}</span>`).show()
+      $act.html(`<span>${custom.state}</span>`).show()
     } else {
       $act.hide()
     }
