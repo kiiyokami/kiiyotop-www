@@ -31,7 +31,7 @@
       { label: 'Friends', value: count(d.friends) },
     ]} />
     {#if d.recent.length > 0}
-      <p class="recent num">{d.recent[0].name}, {hours(d.recent[0].minutes_2weeks)}</p>
+      <p class="recent num">{d.recent[0].name}, {hours(d.recent[0].minutes_2weeks)}h</p>
     {:else}
       <p class="note">No games played in the last two weeks.</p>
     {/if}

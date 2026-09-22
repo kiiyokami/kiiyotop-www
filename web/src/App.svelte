@@ -65,6 +65,8 @@
   @media (max-width: 720px) {
     .index { grid-template-columns: 1fr; }
     .span-2, .span-3 { grid-column: span 1; }
-    .index > :global(.cell) { border-right: none; }
+    .index > :global(.cell),
+    .index > :global(.span-2) > :global(.cell),
+    .index > :global(.span-3) > :global(.cell) { border-right: none; }
   }
 </style>

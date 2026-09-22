@@ -107,3 +107,9 @@ cd api && cargo build --release
 # Restart service
 sudo systemctl restart kiiyotop-api
 ```
+
+The systemd unit's `WorkingDirectory` must be the `api/` directory (or wherever
+`maimai.toml` is deployed alongside the binary), since `main.rs` reads `maimai.toml`
+relative to the process's working directory at startup. If the service runs from
+the repo root instead, maimai silently degrades to "No maimai record on file." with
+only a startup log warning.

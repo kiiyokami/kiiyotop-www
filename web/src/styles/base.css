@@ -24,7 +24,7 @@ body {
 /* The stage headline is the only large type on the page. h1 is the wordmark,
    h2 is the stage line. Nothing else gets a serif. */
 h1, h2 { font-family: var(--serif); line-height: 1.1; }
-h1 { font-size: 0.9375rem; font-weight: 400; }
+h1 { font-size: 0.9375rem; font-weight: 200; }
 h2 { font-size: var(--stage-size); font-weight: 200; letter-spacing: -0.01em; }
 
 a { color: inherit; text-decoration: none; }
