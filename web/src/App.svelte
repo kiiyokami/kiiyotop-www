@@ -56,6 +56,7 @@
   .span-3 > :global(.cell) { height: 100%; }
 
   .index > :global(.cell:nth-child(3n)),
+  .index > :global(.span-2) + :global(.cell),
   .index > :global(.span-3) > :global(.cell) { border-right: none; }
   .index > :global(.span-3) > :global(.cell) { border-bottom: none; }
 
