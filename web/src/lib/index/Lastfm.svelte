@@ -15,15 +15,25 @@
     <p class="note">Couldn't reach Last.fm.</p>
   {:else if !d}
     <p class="note">Couldn't reach Last.fm.</p>
-  {:else if d.top_artists.length === 0}
-    <p class="note">Nothing scrobbled in the last month.</p>
-  {:else}
+  {:else if d.top_artists.length > 0}
     <ul>
       {#each d.top_artists.slice(0, 3) as a (a.name)}
         <li><span class="name">{a.name}</span> <span class="num">{count(a.playcount)}</span></li>
       {/each}
     </ul>
     <p class="total num">{count(d.total_scrobbles)} scrobbles</p>
+  {:else if d.recent.length > 0}
+    <!-- Last.fm's monthly top-artists chart is a separate, sometimes-lagging
+         aggregate: it can be empty even with real recent scrobbles. Fall
+         back to the raw recent list rather than claiming nothing happened. -->
+    <ul>
+      {#each d.recent.slice(0, 3) as t (t.name + t.artist)}
+        <li><span class="name">{t.name}</span> <span class="num">{t.artist}</span></li>
+      {/each}
+    </ul>
+    <p class="total num">{count(d.total_scrobbles)} scrobbles</p>
+  {:else}
+    <p class="note">Nothing scrobbled in the last month.</p>
   {/if}
 </Cell>
 
