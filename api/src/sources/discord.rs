@@ -38,11 +38,11 @@ pub fn normalize(lanyard: &Value) -> Option<Presence> {
         .to_string();
 
     // Clamped to the four values the frontend's dot colour mapping expects.
-    let status = match data["discord_status"].as_str() {
-        Some(s @ ("online" | "idle" | "dnd")) => s,
-        _ => "offline",
-    }
-    .to_string();
+    let status = data["discord_status"]
+        .as_str()
+        .filter(|s| matches!(*s, "online" | "idle" | "dnd"))
+        .unwrap_or("offline")
+        .to_string();
 
     Some(Presence {
         name,

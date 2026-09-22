@@ -18,6 +18,7 @@ type Fetched<T> = Result<T, AppError>;
 /// Pure assembly, so the degradation behaviour is testable with no network.
 /// A failed source becomes `None` and serializes as `null`.
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 pub fn assemble(
     discord_raw: Fetched<Value>,
     lastfm_raw:  Fetched<(Value, Value, Value, Vec<String>)>,

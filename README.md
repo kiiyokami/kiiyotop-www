@@ -4,19 +4,37 @@ Personal homepage at [kiiyo.top](https://kiiyo.top).
 
 ## Stack
 
-- **Frontend** — Vite + TypeScript + jQuery, served as static files via nginx
-- **Backend** — Rust (axum) API server, proxies external APIs
+- **Frontend**: Vite + TypeScript + Svelte, served as static files via nginx
+- **Backend**: Rust (axum) API server, fetches and normalizes external APIs
 
 ## Project structure
 
 ```
 .
-├── src/              # Frontend TypeScript + CSS
-├── index.html
-├── vite.config.ts
-└── api/              # Rust backend
+├── web/                    # Frontend
+│   ├── index.html
+│   ├── public/             # favicon, static assets
+│   └── src/
+│       ├── main.ts
+│       ├── App.svelte
+│       ├── styles/         # tokens.css, base.css
+│       └── lib/
+│           ├── types.ts    # snapshot types, mirrored from api/src/model.rs
+│           ├── snapshot.ts # fetches and parses /api/snapshot
+│           ├── stage.ts    # derives stage content from the snapshot
+│           ├── Stage.svelte
+│           ├── ui/         # Cell, Rows, Skeleton, StatusDot, Value, ThemeToggle
+│           └── index/      # Lastfm, Steam, Cs2, Rhythm, Vndb, Github cells
+├── vite.config.ts          # root: web, outDir: ../dist
+└── api/                    # Rust backend
+    ├── maimai.toml         # checked-in, frozen maimai record (no public API)
     └── src/
-        └── routes/   # lastfm, steam, discord, leetify, osu, now
+        ├── main.rs
+        ├── cache.rs
+        ├── http.rs
+        ├── model.rs
+        ├── snapshot.rs      # assembles the /api/snapshot response
+        └── sources/         # lastfm, steam, discord, leetify, osu, vndb, github, maimai
 ```
 
 ## Environment variables
@@ -31,41 +49,47 @@ STEAM_API_KEY=
 STEAM_ID=
 
 LEETIFY_API_KEY=
-PORT=3000
 
 OSU_API_KEY=
 OSU_USER=
 
 DISCORD_USER_ID=
+
+VNDB_USER_ID=
+
+# Optional. Without it the server falls back to 60 unauthenticated requests
+# per hour, shared across all visitors and buffered by a 15 minute cache.
+GITHUB_USER=
+GITHUB_TOKEN=
+
+PORT=3000
 ```
+
+maimai has no variable: it has no public API, so its record lives in `api/maimai.toml`,
+checked in and read once at startup.
 
 ## Development
 
 ```bash
-# Frontend dev server
+# Frontend dev server (proxies /api to localhost:3000)
 npm run dev
 
-# Backend (from api/)
+# Backend
 cd api && cargo run
 ```
 
 ## API endpoints
 
-| Method | Path | Source |
-|--------|------|--------|
-| GET | `/api/lastfm/recent` | Last.fm recent tracks |
-| GET | `/api/lastfm/topartists` | Last.fm top artists (1 month) |
-| GET | `/api/lastfm/toptracks` | Last.fm top tracks (1 month) |
-| GET | `/api/lastfm/artisttags?artist=` | Last.fm artist tags |
-| GET | `/api/steam/summary` | Steam player summary |
-| GET | `/api/steam/recent` | Recently played games |
-| GET | `/api/steam/level` | Steam level |
-| GET | `/api/steam/friends` | Friends list |
-| GET | `/api/discord` | Discord presence (Lanyard) |
-| GET | `/api/leetify` | Leetify CS2 stats |
-| GET | `/api/osu/user` | osu! user profile |
-| GET | `/api/osu/best` | osu! top plays (with beatmap metadata) |
-| GET | `/now` | Unified snapshot of all sources |
+| Method | Path | Returns |
+|--------|------|---------|
+| GET | `/api/snapshot` | The whole page's data, normalized and cached. A source that fails serializes as `null`. |
+
+The twelve per-source routes and `/now` were removed: the frontend was their only
+consumer. Every source is fetched server-side, so no API key reaches the browser and
+no rate limit is charged per visitor.
+
+maimai is not fetched. The tracker has no public API, so the standing record lives in
+`api/maimai.toml` and is read once at startup.
 
 ## Deployment
 
