@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug, PartialEq, Default)]
 pub struct Snapshot {
@@ -162,6 +162,17 @@ pub struct Repo {
     pub language:    Option<String>,
     pub stars:       u64,
     pub url:         String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+pub struct Maimai {
+    pub rating:  u64,
+    pub average: f64,
+    pub dan:     String,
+    pub class:   String,
+    pub stars:   u64,
+    pub plays:   u64,
+    pub url:     String,
 }
 
 #[cfg(test)]

@@ -18,6 +18,8 @@ tower-http         = { version = "0.5", features = ["cors"] }
 tracing            = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 urlencoding        = "2"
+toml = "1.1.6"
 
 [dev-dependencies]
+tempfile = "3.27.0"
 wiremock = "0.6"
