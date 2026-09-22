@@ -6,6 +6,9 @@
   import Lastfm from './lib/index/Lastfm.svelte'
   import Steam from './lib/index/Steam.svelte'
   import Cs2 from './lib/index/Cs2.svelte'
+  import Rhythm from './lib/index/Rhythm.svelte'
+  import Vndb from './lib/index/Vndb.svelte'
+  import Github from './lib/index/Github.svelte'
 
   onMount(() => startPolling())
 </script>
@@ -22,7 +25,11 @@
     <Lastfm state={$snapshot} />
     <Steam  state={$snapshot} />
     <Cs2    state={$snapshot} />
-    <!-- Cells 2.4 to 2.6 arrive in Task 17. -->
+
+    <div class="span-2"><Rhythm state={$snapshot} /></div>
+    <Vndb   state={$snapshot} />
+
+    <div class="span-3"><Github state={$snapshot} /></div>
   </div>
 </main>
 
@@ -41,9 +48,22 @@
   /* Three equal columns. Cells that need more say so themselves in Task 17. */
   .index { display: grid; grid-template-columns: repeat(3, 1fr); }
 
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  /* Wrappers must not swallow the grid: the Cell inside needs to fill them. */
+  .span-2 > :global(.cell),
+  .span-3 > :global(.cell) { height: 100%; }
+
+  .index > :global(.cell:nth-child(3n)),
+  .index > :global(.span-3) > :global(.cell) { border-right: none; }
+  .index > :global(.span-3) > :global(.cell) { border-bottom: none; }
+
   /* The index collapses in source order. The stage shrinks via --stage-size,
      which is already clamped, so nothing here touches type size. */
   @media (max-width: 720px) {
     .index { grid-template-columns: 1fr; }
+    .span-2, .span-3 { grid-column: span 1; }
+    .index > :global(.cell) { border-right: none; }
   }
 </style>
