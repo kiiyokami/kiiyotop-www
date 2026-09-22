@@ -1,0 +1,59 @@
+:root {
+  /* Light: the blown-out day. */
+  --bg:         #ffffff;
+  --surface:    #f2f6fa;   /* skeletons only. cells have no fill. */
+  --hairline:   #cfd9e2;
+  --text:       #15191d;
+  --text-2:     #565f69;
+  --accent:     #2f6f8f;   /* cold by day */
+  --accent-ink: #ffffff;
+
+  /* There is no --r-card, because there are no cards. The only rounded thing
+     on the page is the focus ring, and it is rounded to match whatever it wraps. */
+  --r-small: 2px;
+
+  /* Spacing. The stage uses s6 and s7; index cells use s2 to s4. */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1.125rem;
+  --s5: 2rem;
+  --s6: 3.5rem;
+  --s7: 5rem;
+
+  --serif: 'Spectral', Georgia, serif;
+  --sans:  'IBM Plex Sans', system-ui, sans-serif;
+  --mono:  'IBM Plex Mono', ui-monospace, monospace;
+
+  /* The stage headline. Clamped so it never overflows a narrow viewport. */
+  --stage-size: clamp(1.875rem, 1.2rem + 3.4vw, 2.875rem);
+
+  --t: 160ms ease;
+}
+
+/* Dark: the sodium night. A different world, not an inversion. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg:         #0d0f12;
+    --surface:    #14181c;
+    --hairline:   #242a30;
+    --text:       #eef1f3;
+    --text-2:     #99a3ac;
+    --accent:     #f0a23c;   /* amber by night */
+    --accent-ink: #1a1205;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg:         #0d0f12;
+  --surface:    #14181c;
+  --hairline:   #242a30;
+  --text:       #eef1f3;
+  --text-2:     #99a3ac;
+  --accent:     #f0a23c;
+  --accent-ink: #1a1205;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t: 0ms; }
+}

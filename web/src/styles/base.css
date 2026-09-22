@@ -1,0 +1,58 @@
+@import '@fontsource/spectral/200.css';
+@import '@fontsource/spectral/300.css';
+@import '@fontsource/spectral/400.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import './tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { color-scheme: light dark; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The stage headline is the only large type on the page. h1 is the wordmark,
+   h2 is the stage line. Nothing else gets a serif. */
+h1, h2 { font-family: var(--serif); line-height: 1.1; }
+h1 { font-size: 0.9375rem; font-weight: 400; }
+h2 { font-size: var(--stage-size); font-weight: 200; letter-spacing: -0.01em; }
+
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+img { display: block; max-width: 100%; }
+
+/* One focus treatment for everything. Never removed, only replaced. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-small);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* Small uppercase labels. Held to 4.5:1 via --text-2, never a lighter grey.
+   Size and tracking separate these from prose, not contrast. */
+.label {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* The section decimal. The only place besides live state and the focus ring
+   where the accent is allowed. */
+.decimal { color: var(--accent); }
