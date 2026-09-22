@@ -1,13 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { get } from 'svelte/store'
-import { snapshot, startPolling } from './snapshot'
 
 const empty = {
   now: { discord: null, listening: null, playing: null },
   lastfm: null, steam: null, cs2: null, osu: null, vndb: null, github: null,
 }
 
-beforeEach(() => { vi.useFakeTimers() })
+let snapshot: typeof import('./snapshot').snapshot
+let startPolling: typeof import('./snapshot').startPolling
+
+beforeEach(async () => {
+  vi.useFakeTimers()
+  vi.resetModules()
+  ;({ snapshot, startPolling } = await import('./snapshot'))
+})
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
 describe('snapshot store', () => {
