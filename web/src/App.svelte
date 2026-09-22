@@ -3,6 +3,9 @@
   import { snapshot, startPolling } from './lib/snapshot'
   import Stage from './lib/Stage.svelte'
   import ThemeToggle from './lib/ui/ThemeToggle.svelte'
+  import Lastfm from './lib/index/Lastfm.svelte'
+  import Steam from './lib/index/Steam.svelte'
+  import Cs2 from './lib/index/Cs2.svelte'
 
   onMount(() => startPolling())
 </script>
@@ -16,7 +19,10 @@
   <Stage state={$snapshot} />
 
   <div class="index">
-    <!-- Cells 2.1 to 2.6 arrive in Tasks 16 and 17. -->
+    <Lastfm state={$snapshot} />
+    <Steam  state={$snapshot} />
+    <Cs2    state={$snapshot} />
+    <!-- Cells 2.4 to 2.6 arrive in Task 17. -->
   </div>
 </main>
 
