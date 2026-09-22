@@ -7,6 +7,7 @@ pub struct Snapshot {
     pub steam:  Option<Steam>,
     pub cs2:    Option<Cs2>,
     pub osu:    Option<Osu>,
+    pub maimai: Option<Maimai>,
     pub vndb:   Option<Vndb>,
     pub github: Option<Github>,
 }
@@ -190,6 +191,7 @@ mod tests {
             "steam":  null,
             "cs2":    null,
             "osu":    null,
+            "maimai": null,
             "vndb":   null,
             "github": null
         }));
