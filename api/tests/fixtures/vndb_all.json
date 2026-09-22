@@ -1,0 +1,5 @@
+{ "results": [
+  { "id": "u1", "vn": { "id": "v1", "title": "Highest Rated", "image": { "url": "https://example.test/a.jpg" } }, "vote": 95 },
+  { "id": "u2", "vn": { "id": "v2", "title": "Middle" }, "vote": 80 },
+  { "id": "u3", "vn": { "id": "v3", "title": "Unvoted" } }
+], "more": false }

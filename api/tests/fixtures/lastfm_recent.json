@@ -1,0 +1,27 @@
+{
+  "recenttracks": {
+    "track": [
+      {
+        "name": "Live Song",
+        "artist": { "#text": "Live Artist" },
+        "album": { "#text": "Live Album" },
+        "image": [
+          { "size": "small", "#text": "https://example.test/s.png" },
+          { "size": "medium", "#text": "https://example.test/m.png" }
+        ],
+        "@attr": { "nowplaying": "true" },
+        "url": "https://example.test/1"
+      },
+      {
+        "name": "Past Song",
+        "artist": { "#text": "Past Artist" },
+        "album": { "#text": "Past Album" },
+        "image": [
+          { "size": "medium", "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png" }
+        ],
+        "url": "https://example.test/2"
+      }
+    ],
+    "@attr": { "user": "Kiiyo_", "total": "48213" }
+  }
+}

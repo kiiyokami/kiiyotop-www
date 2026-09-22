@@ -1,7 +1,11 @@
-mod routes;
+mod cache;
+mod http;
+mod model;
+mod snapshot;
+mod sources;
 
-use axum::{Router, routing::get};
-use tower_http::cors::{CorsLayer, Any};
+use axum::{routing::get, Router};
+use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -19,7 +23,7 @@ async fn main() {
         .build()
         .expect("failed to build reqwest client");
 
-    let state = routes::AppState { client };
+    let state = snapshot::AppState { client, cache: cache::Cache::new() };
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -27,25 +31,7 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        // Last.fm
-        .route("/api/lastfm/recent",     get(routes::lastfm::recent))
-        .route("/api/lastfm/topartists", get(routes::lastfm::top_artists))
-        .route("/api/lastfm/toptracks",  get(routes::lastfm::top_tracks))
-        .route("/api/lastfm/artisttags", get(routes::lastfm::artist_tags))
-        // Steam
-        .route("/api/steam/summary",     get(routes::steam::summary))
-        .route("/api/steam/recent",      get(routes::steam::recent))
-        .route("/api/steam/level",       get(routes::steam::level))
-        .route("/api/steam/friends",     get(routes::steam::friends))
-        // Discord / Lanyard
-        .route("/api/discord",           get(routes::discord::lanyard))
-        // Leetify
-        .route("/api/leetify",           get(routes::leetify::profile))
-        // osu!
-        .route("/api/osu/user",          get(routes::osu::user))
-        .route("/api/osu/best",          get(routes::osu::best))
-        // Unified snapshot
-        .route("/now",                   get(routes::now::snapshot))
+        .route("/api/snapshot", get(snapshot::handler))
         .layer(cors)
         .with_state(state);
 

@@ -1,0 +1,6 @@
+[
+  { "beatmap_id": "1", "pp": "412.83", "rank": "SH", "maxcombo": "1204",
+    "title": "Map Title", "artist": "Map Artist", "version": "Insane" },
+  { "beatmap_id": "2", "pp": "388.12", "rank": "A", "maxcombo": "900",
+    "title": "Other Map", "artist": "Other Artist", "version": "Extra" }
+]

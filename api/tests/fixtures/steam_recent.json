@@ -1,0 +1,3 @@
+{ "response": { "games": [
+  { "appid": 730, "name": "Counter-Strike 2", "playtime_2weeks": 630, "playtime_forever": 74400 }
+] } }

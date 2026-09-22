@@ -1,0 +1,11 @@
+{
+  "name": "kiiyo",
+  "winrate": 0.5423,
+  "total_matches": 812,
+  "ranks": { "leetify": 1.84, "premier": 18432, "faceit": 8 },
+  "rating": {
+    "aim": 72.4, "positioning": 61.2, "utility": 55.8,
+    "clutch": 0.0412, "opening": 0.0338, "ct_leetify": 1.7, "t_leetify": 1.9
+  },
+  "stats": { "accuracy_head": 43.71, "accuracy_enemy_spotted": 22.1, "reaction_time_ms": 512 }
+}

@@ -1,0 +1,7 @@
+{ "response": { "players": [ {
+  "personaname": "kiiyo",
+  "personastate": 1,
+  "gameextrainfo": "Counter-Strike 2",
+  "gameid": "730",
+  "avatarmedium": "https://example.test/avatar.jpg"
+} ] } }

@@ -1,0 +1,9 @@
+{ "success": true, "data": {
+  "discord_user": { "username": "kiiyo", "global_name": "Kiiyo", "avatar": "abc", "id": "1" },
+  "discord_status": "online",
+  "activities": [
+    { "type": 4, "name": "Custom Status", "state": "wonderful everyday" },
+    { "type": 0, "name": "Counter-Strike 2" }
+  ],
+  "spotify": null
+} }

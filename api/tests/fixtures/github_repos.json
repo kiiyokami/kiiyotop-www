@@ -1,0 +1,8 @@
+[
+  { "name": "kiiyotop-www", "description": "personal homepage", "language": "Rust",
+    "stargazers_count": 3, "html_url": "https://github.com/kiiyokami/kiiyotop-www", "fork": false },
+  { "name": "dotfiles", "description": null, "language": "Shell",
+    "stargazers_count": 0, "html_url": "https://github.com/kiiyokami/dotfiles", "fork": false },
+  { "name": "some-fork", "description": "not mine", "language": "Rust",
+    "stargazers_count": 900, "html_url": "https://github.com/kiiyokami/some-fork", "fork": true }
+]

@@ -1,0 +1,4 @@
+{ "topartists": { "artist": [
+  { "name": "Artist One", "playcount": "412" },
+  { "name": "Artist Two", "playcount": "88" }
+] } }
