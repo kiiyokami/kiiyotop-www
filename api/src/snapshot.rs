@@ -1,6 +1,6 @@
 use crate::cache::Cache;
 use crate::http::AppError;
-use crate::model::{Maimai, Now, Snapshot};
+use crate::model::{Now, Snapshot};
 use crate::sources::{discord, github, lastfm, leetify, osu, steam, vndb};
 use axum::{extract::State, Json};
 use serde_json::Value;
@@ -9,8 +9,6 @@ use serde_json::Value;
 pub struct AppState {
     pub client: reqwest::Client,
     pub cache:  Cache,
-    /// Loaded once at startup. `None` if `api/maimai.toml` is missing or malformed.
-    pub maimai: Option<Maimai>,
 }
 
 type Fetched<T> = Result<T, AppError>;
@@ -18,14 +16,12 @@ type Fetched<T> = Result<T, AppError>;
 /// Pure assembly, so the degradation behaviour is testable with no network.
 /// A failed source becomes `None` and serializes as `null`.
 #[allow(clippy::type_complexity)]
-#[allow(clippy::too_many_arguments)]
 pub fn assemble(
     discord_raw: Fetched<Value>,
     lastfm_raw:  Fetched<(Value, Value, Value, Vec<String>)>,
     steam_raw:   Fetched<(Value, Value, Value, Value)>,
     leetify_raw: Fetched<Value>,
     osu_raw:     Fetched<(Value, Value)>,
-    maimai:      Option<Maimai>,
     vndb_raw:    Fetched<(Value, Value, Value, Value)>,
     github_raw:  Fetched<(Value, Value)>,
 ) -> Snapshot {
@@ -46,7 +42,6 @@ pub fn assemble(
             steam::normalize(&summary, &level, &friends, &recent)),
         cs2:    leetify_raw.ok().map(|v| leetify::normalize(&v)),
         osu:    osu_raw.ok().and_then(|(user, best)| osu::normalize(&user, &best)),
-        maimai,
         vndb:   vndb_raw.ok().map(|(reading, all, finished, wishlist)|
             vndb::normalize(&reading, &all, &finished, &wishlist)),
         github: github_raw.ok().map(|(user, repos)| github::normalize(&user, &repos)),
@@ -78,11 +73,7 @@ pub async fn handler(State(s): State<AppState>) -> Json<Snapshot> {
         }
     }
 
-    Json(assemble(
-        discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw,
-        s.maimai.clone(),
-        vndb_raw, github_raw,
-    ))
+    Json(assemble(discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw, vndb_raw, github_raw))
 }
 
 #[cfg(test)]
@@ -97,8 +88,7 @@ mod tests {
 
     #[test]
     fn every_source_failing_still_produces_a_snapshot() {
-        let snap = assemble(err(), err(), err(), err(), err(), None, err(), err());
-        assert!(snap.maimai.is_none());
+        let snap = assemble(err(), err(), err(), err(), err(), err(), err());
         assert!(snap.lastfm.is_none());
         assert!(snap.steam.is_none());
         assert!(snap.cs2.is_none());
@@ -117,7 +107,7 @@ mod tests {
             "discord_status": "online", "activities": [], "spotify": null
         }});
         let snap = assemble(
-            Ok(lanyard), err(), err(), err(), err(), None, err(), err(),
+            Ok(lanyard), err(), err(), err(), err(), err(), err(),
         );
         assert_eq!(snap.now.discord.unwrap().name, "kiiyo");
         assert!(snap.lastfm.is_none(), "the failed sources stay null");
@@ -135,23 +125,9 @@ mod tests {
         let snap = assemble(
             err(),
             Ok((recent, empty.clone(), empty.clone(), vec![])),
-            err(), err(), err(), None, err(), err(),
+            err(), err(), err(), err(), err(),
         );
         assert_eq!(snap.now.listening.unwrap().name, "Live");
         assert_eq!(snap.lastfm.unwrap().total_scrobbles, 5);
-    }
-
-    #[test]
-    fn maimai_passes_through_untouched_and_never_reaches_the_stage() {
-        let m = Maimai {
-            rating: 2000, average: 133.3, dan: "八段".into(), class: "B5".into(),
-            stars: 248, plays: 1079, url: "https://example.invalid/p".into(),
-        };
-        let snap = assemble(err(), err(), err(), err(), err(), Some(m), err(), err());
-        assert_eq!(snap.maimai.unwrap().dan, "八段");
-        // The stage carries live state only. maimai is a standing record.
-        assert!(snap.now.discord.is_none());
-        assert!(snap.now.listening.is_none());
-        assert!(snap.now.playing.is_none());
     }
 }

@@ -23,15 +23,7 @@ async fn main() {
         .build()
         .expect("failed to build reqwest client");
 
-    // maimai is static: read once here, never polled. A missing or malformed file
-    // logs a warning inside `load` and serves null, which is the same degradation
-    // path as a failed upstream.
-    let maimai = sources::maimai::load(std::path::Path::new("maimai.toml"));
-    if maimai.is_none() {
-        tracing::warn!("no maimai record loaded; section 2.4.2 will render its empty state");
-    }
-
-    let state = snapshot::AppState { client, cache: cache::Cache::new(), maimai };
+    let state = snapshot::AppState { client, cache: cache::Cache::new() };
 
     let cors = CorsLayer::new()
         .allow_origin(Any)

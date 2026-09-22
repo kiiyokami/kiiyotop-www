@@ -2,7 +2,6 @@ pub mod discord;
 pub mod github;
 pub mod lastfm;
 pub mod leetify;
-pub mod maimai;
 pub mod osu;
 pub mod steam;
 pub mod vndb;

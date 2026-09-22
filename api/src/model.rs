@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[derive(Serialize, Debug, PartialEq, Default)]
 pub struct Snapshot {
@@ -7,7 +7,6 @@ pub struct Snapshot {
     pub steam:  Option<Steam>,
     pub cs2:    Option<Cs2>,
     pub osu:    Option<Osu>,
-    pub maimai: Option<Maimai>,
     pub vndb:   Option<Vndb>,
     pub github: Option<Github>,
 }
@@ -165,17 +164,6 @@ pub struct Repo {
     pub url:         String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct Maimai {
-    pub rating:  u64,
-    pub average: f64,
-    pub dan:     String,
-    pub class:   String,
-    pub stars:   u64,
-    pub plays:   u64,
-    pub url:     String,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,7 +179,6 @@ mod tests {
             "steam":  null,
             "cs2":    null,
             "osu":    null,
-            "maimai": null,
             "vndb":   null,
             "github": null
         }));

@@ -36,12 +36,6 @@ export interface Osu {
 
 export interface VnEntry { title: string; developer: string | null; image: string | null }
 export interface RatedVn { title: string; image: string | null; score: number }
-/** Static standing record. Never live, so it never reaches the stage. */
-export interface Maimai {
-  rating: number; average: number
-  dan: string; class: string
-  stars: number; plays: number; url: string
-}
 
 export interface Vndb {
   reading: VnEntry[]; rated: RatedVn[]
@@ -58,7 +52,6 @@ export interface Snapshot {
   steam: Steam | null
   cs2: Cs2 | null
   osu: Osu | null
-  maimai: Maimai | null
   vndb: Vndb | null
   github: Github | null
 }

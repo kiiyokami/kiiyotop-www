@@ -24,17 +24,16 @@ Personal homepage at [kiiyo.top](https://kiiyo.top).
 │           ├── stage.ts    # derives stage content from the snapshot
 │           ├── Stage.svelte
 │           ├── ui/         # Cell, Rows, Skeleton, StatusDot, Value, ThemeToggle
-│           └── index/      # Lastfm, Steam, Cs2, Rhythm, Vndb, Github cells
+│           └── index/      # Lastfm, Steam, Cs2, Osu, Vndb, Github cells
 ├── vite.config.ts          # root: web, outDir: ../dist
 └── api/                    # Rust backend
-    ├── maimai.toml         # checked-in, frozen maimai record (no public API)
     └── src/
         ├── main.rs
         ├── cache.rs
         ├── http.rs
         ├── model.rs
         ├── snapshot.rs      # assembles the /api/snapshot response
-        └── sources/         # lastfm, steam, discord, leetify, osu, vndb, github, maimai
+        └── sources/         # lastfm, steam, discord, leetify, osu, vndb, github
 ```
 
 ## Environment variables
@@ -65,9 +64,6 @@ GITHUB_TOKEN=
 PORT=3000
 ```
 
-maimai has no variable: it has no public API, so its record lives in `api/maimai.toml`,
-checked in and read once at startup.
-
 ## Development
 
 ```bash
@@ -88,9 +84,6 @@ The twelve per-source routes and `/now` were removed: the frontend was their onl
 consumer. Every source is fetched server-side, so no API key reaches the browser and
 no rate limit is charged per visitor.
 
-maimai is not fetched. The tracker has no public API, so the standing record lives in
-`api/maimai.toml` and is read once at startup.
-
 ## Deployment
 
 ```bash
@@ -107,9 +100,3 @@ cd api && cargo build --release
 # Restart service
 sudo systemctl restart kiiyotop-api
 ```
-
-The systemd unit's `WorkingDirectory` must be the `api/` directory (or wherever
-`maimai.toml` is deployed alongside the binary), since `main.rs` reads `maimai.toml`
-relative to the process's working directory at startup. If the service runs from
-the repo root instead, maimai silently degrades to "No maimai record on file." with
-only a startup log warning.
