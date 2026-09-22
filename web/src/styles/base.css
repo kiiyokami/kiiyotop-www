@@ -12,8 +12,11 @@
 
 html { color-scheme: light dark; }
 
+/* The viewport carries --surface; the page itself sits on --bg inside
+   .page (App.svelte), one step lighter/darker, so it reads as a distinct
+   surface through contrast alone. No border, no shadow, no radius. */
 body {
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font-family: var(--sans);
   font-size: 15px;

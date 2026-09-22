@@ -13,36 +13,46 @@
   onMount(() => startPolling())
 </script>
 
-<header>
-  <h1>kiiyo</h1>
-  <ThemeToggle />
-</header>
+<div class="page">
+  <header>
+    <h1>kiiyo</h1>
+    <ThemeToggle />
+  </header>
 
-<main>
-  <Stage state={$snapshot} />
+  <main>
+    <Stage state={$snapshot} />
 
-  <div class="index">
-    <Lastfm state={$snapshot} />
-    <Steam  state={$snapshot} />
-    <Cs2    state={$snapshot} />
+    <div class="index">
+      <Lastfm state={$snapshot} />
+      <Steam  state={$snapshot} />
+      <Cs2    state={$snapshot} />
 
-    <Osu    state={$snapshot} />
-    <Vndb   state={$snapshot} />
-    <Github state={$snapshot} />
-  </div>
-</main>
+      <Osu    state={$snapshot} />
+      <Vndb   state={$snapshot} />
+      <Github state={$snapshot} />
+    </div>
+  </main>
+</div>
 
 <style>
-  header {
-    max-width: 68rem;
+  /* The viewport (body) carries --surface. This container sits on --bg,
+     one step off it in both themes, narrower than the full viewport and
+     centered, so it reads as a distinct surface through contrast alone.
+     No border, no shadow, no radius: the shade difference does the work. */
+  .page {
+    max-width: 60rem;
     margin: 0 auto;
+    background: var(--bg);
+  }
+
+  header {
     padding: var(--s4) 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--hairline);
   }
-  main { max-width: 68rem; margin: 0 auto; padding: 0 1rem var(--s6); }
+  main { padding: 0 1rem var(--s6); }
 
   /* Six cells, three equal columns, two rows. No wrapper divs: every cell
      is a direct child, so there is no wrapper-div blind spot for the
