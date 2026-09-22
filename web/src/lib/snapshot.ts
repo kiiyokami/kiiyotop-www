@@ -35,7 +35,3 @@ export function startPolling(): () => void {
   const id = setInterval(() => void load(), POLL_MS)
   return () => clearInterval(id)
 }
-
-export function _reset() {
-  store.set({ status: 'loading', data: null, error: null })
-}

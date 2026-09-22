@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { get } from 'svelte/store'
-import { snapshot, startPolling, _reset } from './snapshot'
+import { snapshot, startPolling } from './snapshot'
 
 const empty = {
   now: { discord: null, listening: null, playing: null },
@@ -8,7 +8,7 @@ const empty = {
 }
 
 beforeEach(() => { vi.useFakeTimers() })
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); _reset() })
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals() })
 
 describe('snapshot store', () => {
   it('starts in the loading state with no data', () => {
