@@ -44,7 +44,7 @@ export interface Vndb {
 }
 
 export interface Repo { name: string; description: string | null; language: string | null; stars: number; url: string }
-export interface Github { repos: number; followers: number; languages: string[]; recent: Repo[] }
+export interface Github { pinned: Repo[] }
 
 export interface Snapshot {
   now: Now

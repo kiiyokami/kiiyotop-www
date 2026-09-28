@@ -10,7 +10,7 @@ test('a live track takes the stage', () => {
     listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true },
   }
   const c = stageContent(now)
-  expect(c.label).toBe('1  Now listening')
+  expect(c.label).toBe('listening now')
   expect(c.headline).toBe('Ame wo Matsu')
   expect(c.sub).toBe('Lamp')
   expect(c.empty).toBe(false)
@@ -19,7 +19,7 @@ test('a live track takes the stage', () => {
 test('a game takes the stage when nothing is playing musically', () => {
   const now: Now = { ...empty, playing: { name: 'Counter-Strike 2', app_id: '730' } }
   const c = stageContent(now)
-  expect(c.label).toBe('1  Now playing')
+  expect(c.label).toBe('playing now')
   expect(c.headline).toBe('Counter-Strike 2')
   expect(c.sub).toBeNull()
 })
@@ -45,7 +45,7 @@ test('a non-live scrobble is history, not the stage', () => {
 
 test('the empty stage states its case at full size and invents nothing', () => {
   const c = stageContent(empty)
-  expect(c.label).toBe('1  Now')
+  expect(c.label).toBe('now')
   expect(c.headline).toBe('Nothing playing right now.')
   expect(c.sub).toBeNull()
   expect(c.empty).toBe(true)

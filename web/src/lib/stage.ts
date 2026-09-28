@@ -14,7 +14,7 @@ const NOTHING = 'Nothing playing right now.'
  * Decides what occupies the stage.
  *
  * The stage carries live state only. A scrobble with `live: false` is history and
- * belongs in cell 2.1, not here. When nothing is live the stage holds its size and
+ * belongs in the music window, not here. When nothing is live the stage holds its size and
  * states the case, because that is the page's default condition, not an error.
  */
 export function stageContent(now: Now | null): StageContent {
@@ -30,7 +30,7 @@ export function stageContent(now: Now | null): StageContent {
 
   if (track) {
     return {
-      label: '1  Now listening',
+      label: 'listening now',
       headline: track.name,
       sub: track.artist,
       context,
@@ -39,8 +39,8 @@ export function stageContent(now: Now | null): StageContent {
   }
 
   if (game) {
-    return { label: '1  Now playing', headline: game.name, sub: null, context: context.slice(1), empty: false }
+    return { label: 'playing now', headline: game.name, sub: null, context: context.slice(1), empty: false }
   }
 
-  return { label: '1  Now', headline: NOTHING, sub: null, context, empty: true }
+  return { label: 'now', headline: NOTHING, sub: null, context, empty: true }
 }

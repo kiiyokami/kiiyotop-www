@@ -12,11 +12,11 @@
     <Skeleton lines={2} />
   {:else if !d}
     <p class="note">Couldn't reach GitHub.</p>
-  {:else if d.recent.length === 0}
+  {:else if d.pinned.length === 0}
     <p class="note">No public pushes recently.</p>
   {:else}
     <ul>
-      {#each d.recent.slice(0, 3) as repo (repo.name)}
+      {#each d.pinned.slice(0, 3) as repo (repo.name)}
         <li>
           <a href={repo.url} target="_blank" rel="noopener">{repo.name}</a>
           {#if repo.language}<span class="lang num">{repo.language}</span>{/if}
