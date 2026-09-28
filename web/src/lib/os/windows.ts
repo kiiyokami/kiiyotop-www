@@ -33,9 +33,9 @@ const LAYOUT: Record<WinId, Geom> = {
   music:    { x: 100, y: 190, w: 225, h: 150 },
   reading:  { x: 345, y: 190, w: 225, h: 150 },
   projects: { x: 100, y: 362, w: 470, h: 190 },
-  socials:  { x: 600, y: 18,  w: 210, h: 150 },
-  games:    { x: 830, y: 18,  w: 250, h: 150 },
-  terminal: { x: 600, y: 190, w: 480, h: 230 },
+  socials:  { x: 600, y: 18,  w: 210, h: 200 },
+  games:    { x: 830, y: 18,  w: 250, h: 200 },
+  terminal: { x: 600, y: 240, w: 480, h: 230 },
 }
 
 export function workOffset(width: number): number {

@@ -30,6 +30,24 @@ describe('initial layout', () => {
   })
 })
 
+describe('tidy layout', () => {
+  it('gives games and socials room for all their rows', () => {
+    expect(defaultGeom('games', W).h).toBe(200)
+    expect(defaultGeom('socials', W).h).toBe(200)
+  })
+
+  it('never overlaps two windows', () => {
+    const g = WINDOW_IDS.map((id) => defaultGeom(id, W))
+    for (let i = 0; i < g.length; i++) {
+      for (let j = i + 1; j < g.length; j++) {
+        const a = g[i], b = g[j]
+        const apart = a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y
+        expect(apart, `${WINDOW_IDS[i]} overlaps ${WINDOW_IDS[j]}`).toBe(true)
+      }
+    }
+  })
+})
+
 describe('window actions', () => {
   it('minimize hides and keeps where the window was', () => {
     const moved = move(tidy(W), 'music', 500, 300, B)
