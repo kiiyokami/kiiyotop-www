@@ -14,6 +14,11 @@ describe('profiles', () => {
     expect(socials.map((p) => p.label)).toEqual(['Discord', 'LinkedIn', 'Instagram', 'Spotify'])
   })
 
+  it('uses the Instagram handle with the double i', () => {
+    expect(profiles.instagram.handle).toBe('kiiyokamii')
+    expect(profiles.instagram.url).toBe('https://www.instagram.com/kiiyokamii')
+  })
+
   it('points Last.fm and Steam at the real profiles', () => {
     expect(profiles.lastfm.url).toBe('https://www.last.fm/user/Kiiyo_')
     expect(profiles.steam.url).toBe('https://steamcommunity.com/profiles/76561198417657156')

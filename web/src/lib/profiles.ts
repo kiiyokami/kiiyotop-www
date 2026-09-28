@@ -8,7 +8,7 @@ export interface Profile {
 export const profiles = {
   discord:   { label: 'Discord',   handle: 'kiiyo',     url: 'https://discord.com/users/248013205425750016' },
   linkedin:  { label: 'LinkedIn',  handle: 'abtogni',   url: 'https://www.linkedin.com/in/abtogni' },
-  instagram: { label: 'Instagram', handle: 'kiiyokami', url: 'https://www.instagram.com/kiiyokami' },
+  instagram: { label: 'Instagram', handle: 'kiiyokamii', url: 'https://www.instagram.com/kiiyokamii' },
   spotify:   { label: 'Spotify',   handle: null,        url: 'https://open.spotify.com/user/8es9da5lpjia1g2fr49brrffa' },
   steam:     { label: 'Steam',     handle: null,        url: 'https://steamcommunity.com/profiles/76561198417657156' },
   cs2:       { label: 'CS2',       handle: null,        url: 'https://leetify.com/app/profile/76561198417657156' },
