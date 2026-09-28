@@ -9,9 +9,9 @@ const W = 1300 // work-area offset of 100
 const B = { width: 1300, height: 584 }
 
 describe('initial layout', () => {
-  it('opens only now.txt on first visit, in front', () => {
+  it('opens now.txt and the terminal on first visit, with now.txt in front', () => {
     const s = initial(W)
-    expect(WINDOW_IDS.filter((id) => !s.windows[id].hidden)).toEqual(['now'])
+    expect(WINDOW_IDS.filter((id) => !s.windows[id].hidden)).toEqual(['now', 'terminal'])
     expect(frontId(s)).toBe('now')
     expect(s.order).toHaveLength(WINDOW_IDS.length)
   })

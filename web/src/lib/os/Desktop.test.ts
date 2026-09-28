@@ -15,10 +15,10 @@ const state: SnapshotState = {
 
 beforeEach(() => localStorage.clear())
 
-test('only now.txt is open on first visit', () => {
+test('now.txt and the terminal are open on first visit', () => {
   const { getAllByRole } = render(Desktop, { props: { state } })
   const names = getAllByRole('region').map((r) => r.getAttribute('aria-labelledby'))
-  expect(names).toEqual(['win-now-title'])
+  expect(names).toEqual(['win-now-title', 'win-terminal-title'])
 })
 
 test('a closed window comes back from the taskbar', async () => {
@@ -38,15 +38,18 @@ test('the layout is saved after a change', async () => {
   expect(saved.windows.now.hidden).toBe(true)
 })
 
-test('tidy up opens every window', async () => {
+test('tidy up puts the desktop back the way it starts', async () => {
   const { getByRole, getAllByRole } = render(Desktop, { props: { state } })
+  await fireEvent.click(getByRole('button', { name: 'music, hidden' }))
+  await fireEvent.click(getByRole('button', { name: 'games, hidden' }))
+  await fireEvent.click(getByRole('button', { name: 'Close terminal' }))
   await fireEvent.click(getByRole('button', { name: 'tidy up' }))
-  expect(getAllByRole('region')).toHaveLength(WINDOW_IDS.length)
+  const names = getAllByRole('region').map((r) => r.getAttribute('aria-labelledby'))
+  expect(names).toEqual(['win-now-title', 'win-terminal-title'])
 })
 
 test('the terminal can reopen a closed window', async () => {
   const { getByRole, queryByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: 'terminal, hidden' }))
   expect(queryByRole('region', { name: TITLES.projects })).toBeNull()
   const input = getByRole('textbox', { name: 'terminal command' })
   await fireEvent.input(input, { target: { value: 'projects' } })
@@ -65,7 +68,7 @@ test('using the stacked layout does not overwrite the saved desktop layout', asy
 
 test('the terminal is always dark; other windows follow the theme', async () => {
   const { getByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: 'tidy up' }))
+  await fireEvent.click(getByRole('button', { name: 'music, hidden' }))
   expect(getByRole('region', { name: 'terminal' })).toHaveClass('force-dark')
   expect(getByRole('region', { name: 'music' })).not.toHaveClass('force-dark')
 })

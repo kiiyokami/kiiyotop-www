@@ -80,10 +80,13 @@ export function tidy(width: number): OsState {
   return { windows, order: [...WINDOW_IDS.filter((id) => id !== 'now'), 'now'] }
 }
 
-/** First visit: only now.txt is open; the rest wait on the icons and taskbar. */
+const STARTUP: readonly WinId[] = ['now', 'terminal']
+
+/** First visit and "tidy up": now.txt and the terminal open, the rest wait on
+ *  the icons and taskbar. */
 export function initial(width: number): OsState {
   let s = tidy(width)
-  for (const id of WINDOW_IDS) if (id !== 'now') s = minimize(s, id)
+  for (const id of WINDOW_IDS) if (!STARTUP.includes(id)) s = minimize(s, id)
   return s
 }
 

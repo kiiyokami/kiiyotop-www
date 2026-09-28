@@ -3,7 +3,7 @@
   import type { SnapshotState } from '../snapshot'
   import {
     TITLES, WINDOW_IDS, TOP, clampAll, close, flow, front, frontId, load, minimize,
-    move, open, resize, save, taskbarClick, tidy, toggleMax,
+    initial, move, open, resize, save, taskbarClick, toggleMax,
     MENUBAR_H, MIN_DESK_H, TASKBAR_H, type Bounds, type OsState, type WinId,
   } from './windows'
   import { toggleTheme } from './theme'
@@ -45,7 +45,7 @@
   function onaction(a: Action) {
     if (a.type === 'open') apply(open(os, a.id))
     else if (a.type === 'theme') toggleTheme()
-    else if (a.type === 'tidy') apply(tidy(width))
+    else if (a.type === 'tidy') apply(initial(width))
   }
 
   // Stacked mode ignores geometry, so it never clamps it: clamping to a phone
@@ -96,7 +96,7 @@
 </script>
 
 <div class="desktop" class:stacked style:min-height={stacked ? null : `${deskH}px`}>
-  <MenuBar ontidy={() => apply(tidy(width))} />
+  <MenuBar ontidy={() => apply(initial(width))} />
 
   <main class="area">
     {#if !stacked}
