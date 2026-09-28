@@ -12,50 +12,59 @@
 
 html { color-scheme: light dark; }
 
-/* The viewport carries --surface; the page itself sits on --bg inside
-   .page (App.svelte), one step lighter/darker, so it reads as a distinct
-   surface through contrast alone. No border, no shadow, no radius. */
+/* The desk: a 1px dot every 14px. */
 body {
-  background: var(--surface);
+  background:
+    radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1.4px) 0 0 / 14px 14px,
+    var(--desk);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* The stage headline is the only large type on the page. h1 is the wordmark,
-   h2 is the stage line. Nothing else gets a serif. */
-h1, h2 { font-family: var(--serif); line-height: 1.1; }
-h1 { font-size: 0.9375rem; font-weight: 200; }
-h2 { font-size: var(--stage-size); font-weight: 200; letter-spacing: -0.01em; }
-
-a { color: inherit; text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 3px; }
+a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--dot);
+  text-underline-offset: 3px;
+}
+a:hover { text-decoration-color: currentColor; }
 
 img { display: block; max-width: 100%; }
 
+button { font: inherit; color: inherit; }
+
 /* One focus treatment for everything. Never removed, only replaced. */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: var(--r-small);
-}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 :focus:not(:focus-visible) { outline: none; }
 
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
-/* Small uppercase labels. Held to 4.5:1 via --text-2, never a lighter grey.
-   Size and tracking separate these from prose, not contrast. */
+/* Small uppercase labels. --text-2 only, never a lighter grey. */
 .label {
   font-family: var(--mono);
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-2);
 }
 
-/* The section decimal. The only place besides live state and the focus ring
-   where the accent is allowed. */
-.decimal { color: var(--accent); }
+/* The live dot. Square, accent, still. */
+.live {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  margin-right: var(--s2);
+  vertical-align: middle;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

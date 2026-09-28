@@ -9,11 +9,10 @@
 </div>
 
 <style>
-  /* The only user of --surface. MOTION 1: this does not shimmer or pulse. */
+  /* Still, never shimmering. */
   .line {
     height: 0.8125rem;
     margin-bottom: var(--s2);
-    background: var(--surface);
-    border-radius: var(--r-small);
+    background: var(--bar);
   }
 </style>
