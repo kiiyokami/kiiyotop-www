@@ -7,8 +7,8 @@ import { afterEach } from 'vitest'
 // components mounted by one test stay in the DOM for the next.
 afterEach(() => cleanup())
 
-// jsdom does not implement window.matchMedia. Components that read the
-// user's colour-scheme preference (ThemeToggle) need it defined, so tests
+// jsdom does not implement window.matchMedia. Code that reads the
+// colour-scheme or viewport media queries (theme.ts, Desktop) needs it defined, so tests
 // get a neutral stand-in that always reports "no preference" unless a test
 // overrides it.
 if (typeof window !== 'undefined' && !window.matchMedia) {

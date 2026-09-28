@@ -21,10 +21,11 @@ Personal homepage at [kiiyo.top](https://kiiyo.top).
 │       └── lib/
 │           ├── types.ts    # snapshot types, mirrored from api/src/model.rs
 │           ├── snapshot.ts # fetches and parses /api/snapshot
-│           ├── stage.ts    # derives stage content from the snapshot
-│           ├── Stage.svelte
-│           ├── ui/         # Cell, Rows, Skeleton, StatusDot, Value, ThemeToggle
-│           └── index/      # Lastfm, Steam, Cs2, Osu, Vndb, Github cells
+│           ├── stage.ts    # decides what now.txt shows
+│           ├── profiles.ts # every outbound profile link
+│           ├── os/         # kiiyoOS: window state, terminal, theme, desktop chrome
+│           ├── windows/    # one component per window
+│           └── ui/         # Skeleton
 ├── vite.config.ts          # root: web, outDir: ../dist
 └── api/                    # Rust backend
     └── src/

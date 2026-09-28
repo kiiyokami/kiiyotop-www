@@ -71,6 +71,9 @@
   onpointerdown={onfront}
   onfocusin={onfront}
 >
+  <!-- Drag and double-click-to-maximize are mouse enhancements; the control
+       buttons and focusin are the keyboard path. -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <header class="tb" onpointerdown={startDrag} ondblclick={() => { if (!stacked) onmax() }}>
     <h2 id="win-{id}-title">{title}</h2>
     <div class="ctl">
