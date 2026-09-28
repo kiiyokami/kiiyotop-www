@@ -12,6 +12,18 @@ const LABEL_READING: u64 = 1;
 const LABEL_FINISHED: u64 = 2;
 const LABEL_WISHLIST: u64 = 5;
 
+/// Covers VNDB voters rate below 0.5 on both scales (its "Safe" and "Tame"
+/// buckets). An unrated cover is withheld too: the page is shown at work.
+fn safe_cover(image: &Value) -> Option<String> {
+    let sexual = image["sexual"].as_f64()?;
+    let violence = image["violence"].as_f64()?;
+    if sexual < 0.5 && violence < 0.5 {
+        image["url"].as_str().map(str::to_string)
+    } else {
+        None
+    }
+}
+
 fn count_of(v: &Value) -> (u64, bool) {
     let n = v["results"].as_array().map(|a| a.len() as u64).unwrap_or(0);
     (n, v["more"].as_bool().unwrap_or(false))
@@ -27,7 +39,7 @@ pub fn normalize(reading: &Value, all: &Value, finished: &Value, wishlist: &Valu
             let vote = e["vote"].as_f64()?;
             Some(RatedVn {
                 title: e["vn"]["title"].as_str().unwrap_or_default().to_string(),
-                image: e["vn"]["image"]["url"].as_str().map(str::to_string),
+                image: safe_cover(&e["vn"]["image"]),
                 // VNDB stores votes out of 100, displayed out of 10.
                 score: vote / 10.0,
             })
@@ -41,7 +53,7 @@ pub fn normalize(reading: &Value, all: &Value, finished: &Value, wishlist: &Valu
         reading: reading["results"].as_array().map(|entries| entries.iter().map(|e| VnEntry {
             title:     e["vn"]["title"].as_str().unwrap_or_default().to_string(),
             developer: e["vn"]["developers"][0]["name"].as_str().map(str::to_string),
-            image:     e["vn"]["image"]["url"].as_str().map(str::to_string),
+            image:     safe_cover(&e["vn"]["image"]),
         }).collect()).unwrap_or_default(),
         rated,
         finished: finished_n,
@@ -79,11 +91,11 @@ pub async fn fetch(
 
     let reading_body = body(json!({
         "filters": ["label", "=", LABEL_READING],
-        "fields": "vn{id,title,image{url},developers{name}}",
+        "fields": "vn{id,title,image{url,sexual,violence},developers{name}}",
         "results": 3
     }));
     let all_body = body(json!({
-        "fields": "vn{id,title,image{url}},vote", "results": 100
+        "fields": "vn{id,title,image{url,sexual,violence}},vote", "results": 100
     }));
     let finished_body = body(json!({
         "filters": ["label", "=", LABEL_FINISHED], "results": 100
@@ -127,6 +139,43 @@ mod tests {
         assert_eq!(v.reading[0].title, "Subarashiki Hibi");
         assert_eq!(v.reading[0].developer.as_deref(), Some("KeroQ"));
         assert_eq!(v.reading[0].image.as_deref(), Some("https://example.test/cover.jpg"));
+    }
+
+    fn reading_with_image(image: Value) -> Value {
+        json!({ "results": [ { "vn": { "title": "T", "image": image } } ] })
+    }
+
+    #[test]
+    fn normalize_withholds_a_cover_flagged_sexual_or_violent() {
+        // The page is shown at work: anything VNDB voters flag goes blank.
+        for image in [
+            json!({ "url": "https://example.test/x.jpg", "sexual": 1.2, "violence": 0 }),
+            json!({ "url": "https://example.test/x.jpg", "sexual": 0, "violence": 1.0 }),
+        ] {
+            let v = normalize(&reading_with_image(image), &json!({}), &json!({}), &json!({}));
+            assert_eq!(v.reading[0].image, None);
+        }
+    }
+
+    #[test]
+    fn normalize_withholds_a_cover_with_no_rating() {
+        let image = json!({ "url": "https://example.test/x.jpg" });
+        let v = normalize(&reading_with_image(image), &json!({}), &json!({}), &json!({}));
+        assert_eq!(v.reading[0].image, None);
+    }
+
+    #[test]
+    fn normalize_keeps_a_cover_rated_safe_by_most_voters() {
+        let image = json!({ "url": "https://example.test/x.jpg", "sexual": 0.2, "violence": 0.1 });
+        let v = normalize(&reading_with_image(image), &json!({}), &json!({}), &json!({}));
+        assert_eq!(v.reading[0].image.as_deref(), Some("https://example.test/x.jpg"));
+    }
+
+    #[test]
+    fn normalize_withholds_unsafe_covers_in_the_rated_list_too() {
+        let all = json!({ "results": [ { "vote": 90, "vn": { "title": "R", "image": { "url": "https://example.test/r.jpg", "sexual": 2, "violence": 0 } } } ] });
+        let v = normalize(&json!({}), &all, &json!({}), &json!({}));
+        assert_eq!(v.rated[0].image, None);
     }
 
     #[test]

@@ -1,7 +1,7 @@
 { "results": [ {
   "id": "u1", "vn": {
     "id": "v1", "title": "Subarashiki Hibi",
-    "image": { "url": "https://example.test/cover.jpg" },
+    "image": { "url": "https://example.test/cover.jpg", "sexual": 0, "violence": 0 },
     "developers": [ { "name": "KeroQ" } ]
   }, "labels": [ { "label": "Reading" } ]
 } ], "more": false }
