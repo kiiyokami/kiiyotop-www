@@ -4,8 +4,8 @@
 
   let {
     id, title, win, z, focused, stacked,
-    onfront, onminimize, onclose, onmax, onmove, onresize, onsettle,
-    children,
+    onfront, onminimize, onclose, onmax, onmove, onresize, onsettle, onmeasure,
+    maxH, children,
   }: {
     id: WinId
     title: string
@@ -20,11 +20,24 @@
     onmove: (x: number, y: number) => void
     onresize: (w: number, h: number) => void
     onsettle: () => void
+    /** Reports the rendered height, so docked windows below can stack under it. */
+    onmeasure: (h: number) => void
+    /** The room left below this window's top edge; caps a fitted window. */
+    maxH: number
     children: Snippet
   } = $props()
 
   let maxed = $derived(win.max && !stacked)
   let placed = $derived(!stacked && !maxed)
+  let section: HTMLElement | undefined = $state()
+
+  $effect(() => {
+    if (!section || typeof ResizeObserver === 'undefined') return
+    const el = section
+    const ro = new ResizeObserver(() => onmeasure(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  })
 
   /** Tracks one pointer on `el` until it lifts, then settles. */
   function track(e: PointerEvent, el: HTMLElement, onpoint: (ev: PointerEvent) => void) {
@@ -51,12 +64,15 @@
   function startResize(e: PointerEvent) {
     if (e.button !== 0) return
     e.stopPropagation()
-    const sx = e.clientX, sy = e.clientY, sw = win.w, sh = win.h
+    // A fitted window has no stored height to start from: use what is drawn.
+    const sh = win.fit ? section?.offsetHeight || win.h : win.h
+    const sx = e.clientX, sy = e.clientY, sw = win.w
     track(e, e.currentTarget as HTMLElement, (ev) => onresize(sw + ev.clientX - sx, sh + ev.clientY - sy))
   }
 </script>
 
 <section
+  bind:this={section}
   class="win"
   class:focused
   class:maxed
@@ -66,7 +82,8 @@
   style:left={placed ? `${win.x}px` : null}
   style:top={placed ? `${win.y}px` : null}
   style:width={placed ? `${win.w}px` : null}
-  style:height={placed ? `${win.h}px` : null}
+  style:height={placed && !win.fit ? `${win.h}px` : null}
+  style:max-height={placed && win.fit ? `${maxH}px` : null}
   style:z-index={stacked ? null : z}
   onpointerdown={onfront}
   onfocusin={onfront}

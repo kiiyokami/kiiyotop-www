@@ -14,7 +14,12 @@ export const TITLES: Record<WinId, string> = {
 }
 
 export interface Geom { x: number; y: number; w: number; h: number }
-export interface WinState extends Geom { hidden: boolean; max: boolean }
+/**
+ * `docked`: still in its tidy column, so its y follows the windows above it.
+ * Dragging undocks. `fit`: height follows the content. Resizing by hand
+ * turns it off. Close and tidy restore both.
+ */
+export interface WinState extends Geom { hidden: boolean; max: boolean; docked: boolean; fit: boolean }
 /** `order` runs back to front: the last entry is drawn on top. */
 export interface OsState { windows: Record<WinId, WinState>; order: WinId[] }
 /** The window area: below the menu bar, above the taskbar. */
@@ -32,7 +37,23 @@ export const MIN_DESK_H = 700
 export const MENUBAR_H = 26
 export const TASKBAR_H = 30
 
-/** The tidy layout, in coordinates of a 1100px work area. */
+/** Top margin of each column, and the gap between stacked windows. */
+export const TOP = 18
+export const GAP = 22
+
+/** Which windows each docked window stacks under. Socials and terminal share a row. */
+const ABOVE: Record<WinId, WinId[]> = {
+  now: [],
+  reading: ['now'],
+  music: ['reading'],
+  games: [],
+  projects: ['games'],
+  socials: ['projects'],
+  terminal: ['projects'],
+}
+
+/** The tidy layout, in coordinates of a 1100px work area. y and h are the
+ *  fallback before a window has been measured. */
 const LAYOUT: Record<WinId, Geom> = {
   now:      { x: 100, y: 18,  w: 470, h: 140 },
   reading:  { x: 100, y: 180, w: 470, h: 220 },
@@ -55,7 +76,7 @@ export function defaultGeom(id: WinId, width: number): Geom {
 /** Every window open in its default spot, now.txt in front. */
 export function tidy(width: number): OsState {
   const windows = {} as Record<WinId, WinState>
-  for (const id of WINDOW_IDS) windows[id] = { ...defaultGeom(id, width), hidden: false, max: false }
+  for (const id of WINDOW_IDS) windows[id] = { ...defaultGeom(id, width), hidden: false, max: false, docked: true, fit: true }
   return { windows, order: [...WINDOW_IDS.filter((id) => id !== 'now'), 'now'] }
 }
 
@@ -92,7 +113,7 @@ export function minimize(s: OsState, id: WinId): OsState {
 
 /** Unlike minimize, close forgets where the window was. */
 export function close(s: OsState, id: WinId, width: number): OsState {
-  return patch(s, id, { ...defaultGeom(id, width), hidden: true, max: false })
+  return patch(s, id, { ...defaultGeom(id, width), hidden: true, max: false, docked: true, fit: true })
 }
 
 export function toggleMax(s: OsState, id: WinId): OsState {
@@ -115,11 +136,46 @@ function clampGeom(g: Geom, b: Bounds): Geom {
 }
 
 export function move(s: OsState, id: WinId, x: number, y: number, b: Bounds): OsState {
-  return patch(s, id, clampGeom({ ...s.windows[id], x, y }, b))
+  return patch(s, id, { ...clampGeom({ ...s.windows[id], x, y }, b), docked: false })
 }
 
 export function resize(s: OsState, id: WinId, w: number, h: number, b: Bounds): OsState {
-  return patch(s, id, clampGeom({ ...s.windows[id], w, h }, b))
+  return patch(s, id, { ...clampGeom({ ...s.windows[id], w, h }, b), fit: false })
+}
+
+/**
+ * Where every window is drawn. Docked windows take their column's x and
+ * stack under the visible docked windows above them; a hidden or undocked
+ * window passes its place to whatever it was stacked under. `heights` are
+ * measured, and a window not yet measured uses its stored height.
+ */
+export function flow(s: OsState, heights: Partial<Record<WinId, number>>, width: number): Record<WinId, Geom> {
+  const out = {} as Record<WinId, Geom>
+  const height = (id: WinId) => (s.windows[id].fit ? heights[id] ?? s.windows[id].h : s.windows[id].h)
+
+  const place = (id: WinId): Geom => {
+    if (out[id]) return out[id]
+    const w = s.windows[id]
+    if (!w.docked) return (out[id] = { x: w.x, y: w.y, w: w.w, h: height(id) })
+    out[id] = { x: defaultGeom(id, width).x, y: bottomOf(ABOVE[id]), w: w.w, h: height(id) }
+    return out[id]
+  }
+
+  // The lowest edge among the windows this one stacks under, plus a gap.
+  const bottomOf = (ids: WinId[]): number => {
+    let y = TOP
+    for (const id of ids) {
+      const w = s.windows[id]
+      const edge = !w.hidden && w.docked
+        ? place(id).y + place(id).h + GAP
+        : bottomOf(ABOVE[id])
+      y = Math.max(y, edge)
+    }
+    return y
+  }
+
+  for (const id of WINDOW_IDS) place(id)
+  return out
 }
 
 /** Stricter than a drag: after a resize or load the whole window fits, so no
@@ -151,8 +207,10 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 function isWin(v: unknown): v is WinState {
   if (!isRecord(v)) return false
   const finite = (k: string) => typeof v[k] === 'number' && Number.isFinite(v[k])
+  const flag = (k: string) => v[k] === undefined || typeof v[k] === 'boolean'
   return finite('x') && finite('y') && finite('w') && finite('h')
     && typeof v.hidden === 'boolean' && typeof v.max === 'boolean'
+    && flag('docked') && flag('fit')
 }
 
 const isId = (v: unknown): v is WinId => (WINDOW_IDS as readonly unknown[]).includes(v)
@@ -170,7 +228,8 @@ export function parse(raw: string | null, width: number): OsState {
   const windows = { ...base.windows }
   for (const id of WINDOW_IDS) {
     const w = saved[id]
-    if (isWin(w)) windows[id] = { x: w.x + shift, y: w.y, w: w.w, h: w.h, hidden: w.hidden, max: w.max }
+    // Layouts saved before auto-fit carry no docked/fit flags: start stacked.
+    if (isWin(w)) windows[id] = { x: w.x + shift, y: w.y, w: w.w, h: w.h, hidden: w.hidden, max: w.max, docked: w.docked ?? true, fit: w.fit ?? true }
   }
 
   const order: WinId[] = [...new Set(Array.isArray(data.order) ? data.order.filter(isId) : [])]

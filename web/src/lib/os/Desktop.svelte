@@ -2,9 +2,9 @@
   import { onMount } from 'svelte'
   import type { SnapshotState } from '../snapshot'
   import {
-    TITLES, WINDOW_IDS, clampAll, close, front, frontId, load, minimize,
+    TITLES, WINDOW_IDS, TOP, clampAll, close, flow, front, frontId, load, minimize,
     move, open, resize, save, taskbarClick, tidy, toggleMax,
-    MENUBAR_H, MIN_DESK_H, TASKBAR_H, type Bounds, type OsState,
+    MENUBAR_H, MIN_DESK_H, TASKBAR_H, type Bounds, type OsState, type WinId,
   } from './windows'
   import { toggleTheme } from './theme'
   import type { Action } from './terminal'
@@ -77,9 +77,25 @@
   })
 
   let top = $derived(frontId(os))
+
+  // Measured heights are layout, not state: never saved, re-measured on load.
+  let heights = $state<Partial<Record<WinId, number>>>({})
+  let placed = $derived(flow(os, heights, width))
+
+  function measured(id: WinId, h: number) {
+    if (heights[id] !== h) heights = { ...heights, [id]: h }
+  }
+
+  // The desktop grows to hold its lowest window, so nothing is cut off.
+  let deskH = $derived(Math.max(
+    height,
+    MIN_DESK_H,
+    ...WINDOW_IDS.filter((id) => !os.windows[id].hidden)
+      .map((id) => placed[id].y + placed[id].h + TOP + MENUBAR_H + TASKBAR_H),
+  ))
 </script>
 
-<div class="desktop" class:stacked>
+<div class="desktop" class:stacked style:min-height={stacked ? null : `${deskH}px`}>
   <MenuBar ontidy={() => apply(tidy(width))} />
 
   <main class="area">
@@ -91,7 +107,8 @@
       <Window
         {id}
         title={TITLES[id]}
-        win={os.windows[id]}
+        win={{ ...os.windows[id], ...placed[id] }}
+        maxH={Math.max(bounds.height, deskH - MENUBAR_H - TASKBAR_H) - placed[id].y}
         z={os.order.indexOf(id) + 1}
         focused={top === id}
         {stacked}
@@ -102,6 +119,7 @@
         onmove={(x, y) => { os = move(os, id, x, y, bounds) }}
         onresize={(w, h) => { os = resize(os, id, w, h, bounds) }}
         onsettle={() => save(os, width)}
+        onmeasure={(h) => measured(id, h)}
       >
         {#if id === 'now'}<Now state={snapshot} />
         {:else if id === 'music'}<Music state={snapshot} />

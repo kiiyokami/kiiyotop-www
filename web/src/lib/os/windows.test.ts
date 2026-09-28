@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   WINDOW_IDS, MIN_DESK_H, MENUBAR_H, TASKBAR_H, GRAB, MIN_W, MIN_H, TITLE_H, STORAGE_KEY,
-  initial, tidy, defaultGeom, workOffset, front, frontId, open, minimize, close, toggleMax,
+  initial, tidy, flow, GAP, TOP, defaultGeom, workOffset, front, frontId, open, minimize, close, toggleMax,
   taskbarClick, move, resize, clampAll, serialize, parse, load, save,
 } from './windows'
 
@@ -60,6 +60,68 @@ describe('tidy layout', () => {
   })
 })
 
+describe('auto-fit and stacking', () => {
+  const H = { now: 100, reading: 300, music: 150, games: 400, projects: 250, socials: 120, terminal: 160 }
+
+  it('tidy docks every window and fits it to its content', () => {
+    const s = tidy(W)
+    for (const id of WINDOW_IDS) expect(s.windows[id]).toMatchObject({ docked: true, fit: true })
+  })
+
+  it('stacks docked windows in their column using measured heights', () => {
+    const g = flow(tidy(W), H, W)
+    expect(g.now.y).toBe(TOP)
+    expect(g.reading.y).toBe(TOP + 100 + GAP)
+    expect(g.music.y).toBe(TOP + 100 + GAP + 300 + GAP)
+    expect(g.projects.y).toBe(TOP + 400 + GAP)
+    expect(g.socials.y).toBe(TOP + 400 + GAP + 250 + GAP)
+    expect(g.terminal.y).toBe(g.socials.y)
+    expect(g.reading.h).toBe(300)
+  })
+
+  it('lets windows below move up when one above is hidden', () => {
+    const g = flow(minimize(tidy(W), 'reading'), H, W)
+    expect(g.music.y).toBe(TOP + 100 + GAP)
+  })
+
+  it('takes a dragged window out of the stack and closes the gap it left', () => {
+    const s = move(tidy(W), 'reading', 900, 300, B)
+    expect(s.windows.reading.docked).toBe(false)
+    const g = flow(s, H, W)
+    expect(g.reading).toMatchObject({ x: 900, y: 300 })
+    expect(g.music.y).toBe(TOP + 100 + GAP)
+  })
+
+  it('uses the default height until a window has been measured', () => {
+    const g = flow(tidy(W), {}, W)
+    expect(g.reading.y).toBe(TOP + defaultGeom('now', W).h + GAP)
+  })
+
+  it('never overlaps two docked windows, whatever their heights', () => {
+    for (const heights of [H, {}, { now: 600, games: 50, projects: 700 }]) {
+      const g = flow(tidy(W), heights, W)
+      for (let i = 0; i < WINDOW_IDS.length; i++) {
+        for (let j = i + 1; j < WINDOW_IDS.length; j++) {
+          const a = g[WINDOW_IDS[i]], b = g[WINDOW_IDS[j]]
+          const apart = a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y
+          expect(apart, `${WINDOW_IDS[i]} overlaps ${WINDOW_IDS[j]}`).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('resizing by hand turns auto-fit off; close and tidy turn it back on', () => {
+    const resized = resize(tidy(W), 'music', 400, 300, B)
+    expect(resized.windows.music.fit).toBe(false)
+    expect(close(resized, 'music', W).windows.music.fit).toBe(true)
+  })
+
+  it('loads a layout saved before auto-fit as docked and fitted', () => {
+    const raw = JSON.stringify({ windows: { music: { x: 1, y: 2, w: 300, h: 200, hidden: false, max: false } }, order: [] })
+    expect(parse(raw, W).windows.music).toMatchObject({ docked: true, fit: true })
+  })
+})
+
 describe('window actions', () => {
   it('minimize hides and keeps where the window was', () => {
     const moved = move(tidy(W), 'music', 500, 300, B)
@@ -70,7 +132,7 @@ describe('window actions', () => {
   it('close hides and puts the window back in its tidy spot', () => {
     const moved = move(tidy(W), 'music', 500, 300, B)
     const s = close(toggleMax(moved, 'music'), 'music', W)
-    expect(s.windows.music).toEqual({ ...defaultGeom('music', W), hidden: true, max: false })
+    expect(s.windows.music).toEqual({ ...defaultGeom('music', W), hidden: true, max: false, docked: true, fit: true })
   })
 
   it('open unhides and brings to front', () => {
@@ -199,8 +261,8 @@ describe('persistence', () => {
       order: ['bogus', 'music', 'music'],
     })
     const s = parse(raw, W)
-    expect(s.windows.music).toEqual({ x: 1, y: 2, w: 300, h: 200, hidden: true, max: false })
-    expect(s.windows.games).toEqual({ ...defaultGeom('games', W), hidden: true, max: false })
+    expect(s.windows.music).toEqual({ x: 1, y: 2, w: 300, h: 200, hidden: true, max: false, docked: true, fit: true })
+    expect(s.windows.games).toEqual({ ...defaultGeom('games', W), hidden: true, max: false, docked: true, fit: true })
     expect(s.order).toHaveLength(WINDOW_IDS.length)
     expect(s.order).not.toContain('bogus')
     expect(s.order[s.order.length - 1]).toBe('music')
