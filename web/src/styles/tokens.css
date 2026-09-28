@@ -43,7 +43,11 @@
   }
 }
 
-:root[data-theme='dark'] {
+/* .force-dark pins one element to the dark palette in either theme (the
+   terminal window). It also sets color, because inherited text colour was
+   already resolved from the light tokens above it. */
+:root[data-theme='dark'],
+.force-dark {
   --desk:   #121114;
   --dot:    #2a2830;
   --win:    #1c1b20;
@@ -53,6 +57,7 @@
   --text-2: #a9a6b3;
   --accent: #c9b3f5;
   --shadow: #c9b3f5;
+  color: var(--text);
 }
 
 @media (prefers-reduced-motion: reduce) {

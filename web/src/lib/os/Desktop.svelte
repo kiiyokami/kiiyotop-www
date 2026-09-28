@@ -120,6 +120,7 @@
         onresize={(w, h) => { os = resize(os, id, w, h, bounds) }}
         onsettle={() => save(os, width)}
         onmeasure={(h) => measured(id, h)}
+        dark={id === 'terminal'}
       >
         {#if id === 'now'}<Now state={snapshot} />
         {:else if id === 'music'}<Music state={snapshot} />

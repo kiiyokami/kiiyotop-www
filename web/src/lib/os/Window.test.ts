@@ -111,3 +111,13 @@ test('a window resized by hand keeps its height', () => {
   const { container } = setup()
   expect((container.querySelector('section') as HTMLElement).style.height).toBe('200px')
 })
+
+test('a window can force the dark palette regardless of the theme', () => {
+  const { container } = setup({ dark: true })
+  expect(container.querySelector('section')).toHaveClass('force-dark')
+})
+
+test('windows follow the theme by default', () => {
+  const { container } = setup()
+  expect(container.querySelector('section')).not.toHaveClass('force-dark')
+})

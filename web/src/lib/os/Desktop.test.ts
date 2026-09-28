@@ -62,3 +62,10 @@ test('using the stacked layout does not overwrite the saved desktop layout', asy
   expect(back.windows.games).toEqual(initial(2560).windows.games)
   expect(back.windows.now.hidden).toBe(true)
 })
+
+test('the terminal is always dark; other windows follow the theme', async () => {
+  const { getByRole } = render(Desktop, { props: { state } })
+  await fireEvent.click(getByRole('button', { name: 'tidy up' }))
+  expect(getByRole('region', { name: 'terminal' })).toHaveClass('force-dark')
+  expect(getByRole('region', { name: 'music' })).not.toHaveClass('force-dark')
+})

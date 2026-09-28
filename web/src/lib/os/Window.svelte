@@ -5,7 +5,7 @@
   let {
     id, title, win, z, focused, stacked,
     onfront, onminimize, onclose, onmax, onmove, onresize, onsettle, onmeasure,
-    maxH, children,
+    maxH, dark = false, children,
   }: {
     id: WinId
     title: string
@@ -24,6 +24,8 @@
     onmeasure: (h: number) => void
     /** The room left below this window's top edge; caps a fitted window. */
     maxH: number
+    /** Always draw with the dark palette, whatever the theme. */
+    dark?: boolean
     children: Snippet
   } = $props()
 
@@ -77,6 +79,7 @@
   class:focused
   class:maxed
   class:stacked
+  class:force-dark={dark}
   hidden={win.hidden}
   aria-labelledby="win-{id}-title"
   style:left={placed ? `${win.x}px` : null}
