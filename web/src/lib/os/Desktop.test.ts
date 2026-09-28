@@ -15,14 +15,16 @@ const state: SnapshotState = {
 
 beforeEach(() => localStorage.clear())
 
-test('every window is open on first visit, in the fixed order', () => {
+test('only now.txt is open on first visit', () => {
   const { getAllByRole } = render(Desktop, { props: { state } })
   const names = getAllByRole('region').map((r) => r.getAttribute('aria-labelledby'))
-  expect(names).toEqual(WINDOW_IDS.map((id) => `win-${id}-title`))
+  expect(names).toEqual(['win-now-title'])
 })
 
 test('a closed window comes back from the taskbar', async () => {
   const { getByRole, queryByRole } = render(Desktop, { props: { state } })
+  await fireEvent.click(getByRole('button', { name: 'music, hidden' }))
+  expect(getByRole('region', { name: 'music' })).toBeInTheDocument()
   await fireEvent.click(getByRole('button', { name: 'Close music' }))
   expect(queryByRole('region', { name: 'music' })).toBeNull()
   await fireEvent.click(getByRole('button', { name: 'music, hidden' }))
@@ -31,22 +33,21 @@ test('a closed window comes back from the taskbar', async () => {
 
 test('the layout is saved after a change', async () => {
   const { getByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: 'Minimize reading' }))
+  await fireEvent.click(getByRole('button', { name: 'Minimize now.txt' }))
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
-  expect(saved.windows.reading.hidden).toBe(true)
+  expect(saved.windows.now.hidden).toBe(true)
 })
 
-test('tidy up reopens everything', async () => {
+test('tidy up opens every window', async () => {
   const { getByRole, getAllByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: 'Close games' }))
-  await fireEvent.click(getByRole('button', { name: 'Close socials' }))
   await fireEvent.click(getByRole('button', { name: 'tidy up' }))
   expect(getAllByRole('region')).toHaveLength(WINDOW_IDS.length)
 })
 
 test('the terminal can reopen a closed window', async () => {
-  const { getByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: `Close ${TITLES.projects}` }))
+  const { getByRole, queryByRole } = render(Desktop, { props: { state } })
+  await fireEvent.click(getByRole('button', { name: 'terminal, hidden' }))
+  expect(queryByRole('region', { name: TITLES.projects })).toBeNull()
   const input = getByRole('textbox', { name: 'terminal command' })
   await fireEvent.input(input, { target: { value: 'projects' } })
   await fireEvent.submit(input.closest('form')!)
@@ -56,8 +57,8 @@ test('the terminal can reopen a closed window', async () => {
 test('using the stacked layout does not overwrite the saved desktop layout', async () => {
   localStorage.setItem(STORAGE_KEY, serialize(initial(2560), 2560))
   const { getByRole } = render(Desktop, { props: { state } })
-  await fireEvent.click(getByRole('button', { name: 'Minimize reading' }))
+  await fireEvent.click(getByRole('button', { name: 'Minimize now.txt' }))
   const back = load(2560)
   expect(back.windows.games).toEqual(initial(2560).windows.games)
-  expect(back.windows.reading.hidden).toBe(true)
+  expect(back.windows.now.hidden).toBe(true)
 })

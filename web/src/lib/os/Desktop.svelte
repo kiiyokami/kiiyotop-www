@@ -2,8 +2,8 @@
   import { onMount } from 'svelte'
   import type { SnapshotState } from '../snapshot'
   import {
-    TITLES, WINDOW_IDS, clampAll, close, front, frontId, initial, load, minimize,
-    move, open, resize, save, taskbarClick, toggleMax, workOffset,
+    TITLES, WINDOW_IDS, clampAll, close, front, frontId, load, minimize,
+    move, open, resize, save, taskbarClick, tidy, toggleMax, workOffset,
     type Bounds, type OsState,
   } from './windows'
   import { toggleTheme } from './theme'
@@ -48,7 +48,7 @@
   function onaction(a: Action) {
     if (a.type === 'open') apply(open(os, a.id))
     else if (a.type === 'theme') toggleTheme()
-    else if (a.type === 'tidy') apply(initial(width))
+    else if (a.type === 'tidy') apply(tidy(width))
   }
 
   // Stacked mode ignores geometry, so it never clamps it: clamping to a phone
@@ -83,7 +83,7 @@
 </script>
 
 <div class="desktop" class:stacked>
-  <MenuBar ontidy={() => apply(initial(width))} />
+  <MenuBar ontidy={() => apply(tidy(width))} />
 
   <main class="area">
     {#if !stacked}

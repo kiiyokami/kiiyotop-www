@@ -47,10 +47,18 @@ export function defaultGeom(id: WinId, width: number): Geom {
   return { ...g, x: g.x + workOffset(width) }
 }
 
-export function initial(width: number): OsState {
+/** Every window open in its default spot, now.txt in front. */
+export function tidy(width: number): OsState {
   const windows = {} as Record<WinId, WinState>
   for (const id of WINDOW_IDS) windows[id] = { ...defaultGeom(id, width), hidden: false, max: false }
   return { windows, order: [...WINDOW_IDS.filter((id) => id !== 'now'), 'now'] }
+}
+
+/** First visit: only now.txt is open; the rest wait on the icons and taskbar. */
+export function initial(width: number): OsState {
+  let s = tidy(width)
+  for (const id of WINDOW_IDS) if (id !== 'now') s = minimize(s, id)
+  return s
 }
 
 function patch(s: OsState, id: WinId, p: Partial<WinState>): OsState {

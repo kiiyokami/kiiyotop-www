@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   WINDOW_IDS, GRAB, MIN_W, MIN_H, TITLE_H, STORAGE_KEY,
-  initial, defaultGeom, workOffset, front, frontId, open, minimize, close, toggleMax,
+  initial, tidy, defaultGeom, workOffset, front, frontId, open, minimize, close, toggleMax,
   taskbarClick, move, resize, clampAll, serialize, parse, load, save,
 } from './windows'
 
@@ -9,11 +9,18 @@ const W = 1300 // work-area offset of 100
 const B = { width: 1300, height: 584 }
 
 describe('initial layout', () => {
-  it('opens every window, with now.txt in front', () => {
+  it('opens only now.txt on first visit, in front', () => {
     const s = initial(W)
-    expect(WINDOW_IDS.every((id) => !s.windows[id].hidden)).toBe(true)
+    expect(WINDOW_IDS.filter((id) => !s.windows[id].hidden)).toEqual(['now'])
     expect(frontId(s)).toBe('now')
     expect(s.order).toHaveLength(WINDOW_IDS.length)
+  })
+
+  it('tidy opens every window in its default spot, with now.txt in front', () => {
+    const s = tidy(W)
+    expect(WINDOW_IDS.every((id) => !s.windows[id].hidden)).toBe(true)
+    expect(s.windows.games).toMatchObject(defaultGeom('games', W))
+    expect(frontId(s)).toBe('now')
   })
 
   it('centres the 1100px work area and never offsets negatively', () => {
@@ -25,25 +32,25 @@ describe('initial layout', () => {
 
 describe('window actions', () => {
   it('minimize hides and keeps where the window was', () => {
-    const moved = move(initial(W), 'music', 500, 300, B)
+    const moved = move(tidy(W), 'music', 500, 300, B)
     const s = minimize(moved, 'music')
     expect(s.windows.music).toMatchObject({ hidden: true, x: 500, y: 300 })
   })
 
   it('close hides and puts the window back in its tidy spot', () => {
-    const moved = move(initial(W), 'music', 500, 300, B)
+    const moved = move(tidy(W), 'music', 500, 300, B)
     const s = close(toggleMax(moved, 'music'), 'music', W)
     expect(s.windows.music).toEqual({ ...defaultGeom('music', W), hidden: true, max: false })
   })
 
   it('open unhides and brings to front', () => {
-    const s = open(minimize(initial(W), 'games'), 'games')
+    const s = open(minimize(tidy(W), 'games'), 'games')
     expect(s.windows.games.hidden).toBe(false)
     expect(frontId(s)).toBe('games')
   })
 
   it('front reorders without touching geometry, and is a no-op for the front window', () => {
-    const s0 = initial(W)
+    const s0 = tidy(W)
     const s1 = front(s0, 'music')
     expect(frontId(s1)).toBe('music')
     expect(s1.windows).toBe(s0.windows)
@@ -51,21 +58,21 @@ describe('window actions', () => {
   })
 
   it('toggleMax flips max and brings the window to front', () => {
-    const s = toggleMax(initial(W), 'projects')
+    const s = toggleMax(tidy(W), 'projects')
     expect(s.windows.projects.max).toBe(true)
     expect(frontId(s)).toBe('projects')
     expect(toggleMax(s, 'projects').windows.projects.max).toBe(false)
   })
 
   it('frontId skips hidden windows and is null when every window is hidden', () => {
-    let s = minimize(initial(W), 'now')
+    let s = minimize(tidy(W), 'now')
     expect(frontId(s)).not.toBe('now')
     for (const id of WINDOW_IDS) s = minimize(s, id)
     expect(frontId(s)).toBeNull()
   })
 
   it('taskbar click cycles hidden, front, minimized', () => {
-    let s = minimize(initial(W), 'music')
+    let s = minimize(tidy(W), 'music')
     s = taskbarClick(s, 'music')
     expect(s.windows.music.hidden).toBe(false)
     expect(frontId(s)).toBe('music')
@@ -74,13 +81,13 @@ describe('window actions', () => {
   })
 
   it('taskbar click on an open window behind others brings it forward', () => {
-    const s = taskbarClick(initial(W), 'reading')
+    const s = taskbarClick(tidy(W), 'reading')
     expect(s.windows.reading.hidden).toBe(false)
     expect(frontId(s)).toBe('reading')
   })
 
   it('reopens from the taskbar after every window has been closed', () => {
-    let s = initial(W)
+    let s = tidy(W)
     for (const id of WINDOW_IDS) s = close(s, id, W)
     s = taskbarClick(s, 'socials')
     expect(s.windows.socials.hidden).toBe(false)
@@ -90,19 +97,19 @@ describe('window actions', () => {
 
 describe('clamping', () => {
   it('keeps at least GRAB px of a window inside the desktop horizontally', () => {
-    const right = move(initial(W), 'music', 5000, 50, B)
+    const right = move(tidy(W), 'music', 5000, 50, B)
     expect(right.windows.music.x).toBe(B.width - GRAB)
-    const left = move(initial(W), 'music', -5000, 50, B)
+    const left = move(tidy(W), 'music', -5000, 50, B)
     expect(left.windows.music.x).toBe(GRAB - left.windows.music.w)
   })
 
   it('keeps the title bar between the menu bar and the taskbar', () => {
-    expect(move(initial(W), 'music', 300, -50, B).windows.music.y).toBe(0)
-    expect(move(initial(W), 'music', 300, 9999, B).windows.music.y).toBe(B.height - TITLE_H)
+    expect(move(tidy(W), 'music', 300, -50, B).windows.music.y).toBe(0)
+    expect(move(tidy(W), 'music', 300, 9999, B).windows.music.y).toBe(B.height - TITLE_H)
   })
 
   it('enforces the minimum size', () => {
-    const s = resize(initial(W), 'music', 10, 10, B)
+    const s = resize(tidy(W), 'music', 10, 10, B)
     expect(s.windows.music.w).toBe(MIN_W)
     expect(s.windows.music.h).toBe(MIN_H)
   })
@@ -163,7 +170,7 @@ describe('persistence', () => {
     })
     const s = parse(raw, W)
     expect(s.windows.music).toEqual({ x: 1, y: 2, w: 300, h: 200, hidden: true, max: false })
-    expect(s.windows.games).toEqual({ ...defaultGeom('games', W), hidden: false, max: false })
+    expect(s.windows.games).toEqual({ ...defaultGeom('games', W), hidden: true, max: false })
     expect(s.order).toHaveLength(WINDOW_IDS.length)
     expect(s.order).not.toContain('bogus')
     expect(s.order[s.order.length - 1]).toBe('music')
