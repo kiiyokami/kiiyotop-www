@@ -56,8 +56,9 @@ DISCORD_USER_ID=
 
 VNDB_USER_ID=
 
-# Optional. Without it the server falls back to 60 unauthenticated requests
-# per hour, shared across all visitors and buffered by a 15 minute cache.
+# Required for the projects window. Pinned repos come from GitHub's GraphQL
+# API, which rejects unauthenticated requests. A fine-grained token with
+# public read-only access is enough.
 GITHUB_USER=
 GITHUB_TOKEN=
 

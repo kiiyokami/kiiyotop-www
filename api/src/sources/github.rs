@@ -1,63 +1,54 @@
 use crate::cache::Cache;
 use crate::http::{env, env_opt, AppError};
 use crate::model::{Github, Repo};
-use crate::sources::cached_get;
-use serde_json::Value;
-use std::collections::HashMap;
+use crate::sources::cached_post;
+use serde_json::{json, Value};
 use std::time::Duration;
 
 const TTL: Duration = Duration::from_secs(900);
+const ENDPOINT: &str = "https://api.github.com/graphql";
+const QUERY: &str = "query($login: String!) { user(login: $login) { pinnedItems(first: 6, types: REPOSITORY) { nodes { ... on Repository { name description url stargazerCount primaryLanguage { name } } } } } }";
 
-pub fn normalize(user: &Value, repos: &Value) -> Github {
-    let all = repos.as_array().cloned().unwrap_or_default();
-
-    let mut counts: HashMap<String, u64> = HashMap::new();
-    for r in &all {
-        if let Some(lang) = r["language"].as_str() {
-            *counts.entry(lang.to_string()).or_insert(0) += 1;
-        }
+/// GraphQL reports failure inside a 200 body, so a missing user is an error
+/// here rather than an empty list: "nothing pinned" and "query failed" must
+/// not look the same on the page.
+pub fn normalize(body: &Value) -> Result<Github, AppError> {
+    let user = &body["data"]["user"];
+    if !user.is_object() {
+        let reason = body["errors"][0]["message"]
+            .as_str()
+            .or_else(|| body["message"].as_str())
+            .unwrap_or("no user in response");
+        return Err(AppError(format!("github graphql: {reason}")));
     }
-    let mut ranked: Vec<(String, u64)> = counts.into_iter().collect();
-    // Name breaks ties so the row does not reshuffle between requests.
-    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
 
-    Github {
-        repos:     user["public_repos"].as_u64().unwrap_or(0),
-        followers: user["followers"].as_u64().unwrap_or(0),
-        languages: ranked.into_iter().take(6).map(|(l, _)| l).collect(),
-        recent: all.iter()
-            .filter(|r| !r["fork"].as_bool().unwrap_or(false))
-            .take(8)
-            .map(|r| Repo {
-                name:        r["name"].as_str().unwrap_or_default().to_string(),
-                description: r["description"].as_str().map(str::to_string),
-                language:    r["language"].as_str().map(str::to_string),
-                stars:       r["stargazers_count"].as_u64().unwrap_or(0),
-                url:         r["html_url"].as_str().unwrap_or_default().to_string(),
+    let nodes = user["pinnedItems"]["nodes"].as_array().cloned().unwrap_or_default();
+    Ok(Github {
+        pinned: nodes.iter()
+            .filter(|n| n["name"].is_string())
+            .map(|n| Repo {
+                name:        n["name"].as_str().unwrap_or_default().to_string(),
+                description: n["description"].as_str().map(str::to_string),
+                language:    n["primaryLanguage"]["name"].as_str().map(str::to_string),
+                stars:       n["stargazerCount"].as_u64().unwrap_or(0),
+                url:         n["url"].as_str().unwrap_or_default().to_string(),
             })
             .collect(),
-    }
+    })
 }
 
-pub async fn fetch(client: &reqwest::Client, cache: &Cache) -> Result<(Value, Value), AppError> {
-    let user = env("GITHUB_USER")?;
-    let token = env_opt("GITHUB_TOKEN");
-    let auth  = token.as_ref().map(|t| format!("Bearer {t}"));
+pub async fn fetch(client: &reqwest::Client, cache: &Cache) -> Result<Value, AppError> {
+    let login = env("GITHUB_USER")?;
+    // GitHub's GraphQL API rejects unauthenticated requests outright.
+    let token = env_opt("GITHUB_TOKEN")
+        .ok_or_else(|| AppError("missing env var: GITHUB_TOKEN (GitHub GraphQL needs a token)".into()))?;
+    let auth = format!("Bearer {token}");
 
     // GitHub rejects API requests with no User-Agent.
-    let mut headers: Vec<(&str, &str)> = vec![("User-Agent", "kiiyotop-api")];
-    if let Some(v) = auth.as_deref() {
-        headers.push(("Authorization", v));
-    }
+    let headers = [("User-Agent", "kiiyotop-api"), ("Authorization", auth.as_str())];
+    let body = json!({ "query": QUERY, "variables": { "login": login } });
 
-    let user_url = format!("https://api.github.com/users/{user}");
-    let repos_url = format!("https://api.github.com/users/{user}/repos?sort=pushed&per_page=10");
-
-    let (profile, repos) = tokio::join!(
-        cached_get(client, cache, "github:user", TTL, &user_url, &headers),
-        cached_get(client, cache, "github:repos", TTL, &repos_url, &headers),
-    );
-    Ok((profile?, repos?))
+    cached_post(client, cache, "github:pinned", TTL, ENDPOINT, &headers, &body).await
 }
 
 #[cfg(test)]
@@ -67,39 +58,48 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn normalize_reads_the_profile_counts() {
-        let g = normalize(&fixture("github_user"), &fixture("github_repos"));
-        assert_eq!(g.repos, 23);
-        assert_eq!(g.followers, 41);
+    fn normalize_reads_pinned_repos_in_order() {
+        let g = normalize(&fixture("github_pinned")).unwrap();
+        let names: Vec<&str> = g.pinned.iter().map(|r| r.name.as_str()).collect();
+        assert_eq!(names, vec!["kiiyotop-www", "dotfiles"]);
+        assert_eq!(g.pinned[0].language.as_deref(), Some("Svelte"));
+        assert_eq!(g.pinned[0].stars, 3);
+        assert_eq!(g.pinned[0].url, "https://github.com/kiiyokami/kiiyotop-www");
     }
 
     #[test]
-    fn normalize_excludes_forks_from_the_repo_list() {
-        let g = normalize(&fixture("github_user"), &fixture("github_repos"));
-        assert_eq!(g.recent.len(), 2);
-        assert!(!g.recent.iter().any(|r| r.name == "some-fork"));
-    }
-
-    #[test]
-    fn normalize_keeps_a_null_description_as_none() {
-        let g = normalize(&fixture("github_user"), &fixture("github_repos"));
-        let dotfiles = g.recent.iter().find(|r| r.name == "dotfiles").unwrap();
+    fn normalize_keeps_null_description_and_language_as_none() {
+        let g = normalize(&fixture("github_pinned")).unwrap();
+        let dotfiles = &g.pinned[1];
         assert_eq!(dotfiles.description, None);
+        assert_eq!(dotfiles.language, None);
         assert_eq!(dotfiles.stars, 0);
     }
 
     #[test]
-    fn normalize_ranks_languages_by_repo_count_including_forks() {
-        let g = normalize(&fixture("github_user"), &fixture("github_repos"));
-        assert_eq!(g.languages, vec!["Rust".to_string(), "Shell".to_string()],
-            "Rust appears in two repos, Shell in one");
+    fn normalize_accepts_a_user_with_nothing_pinned() {
+        let body = json!({ "data": { "user": { "pinnedItems": { "nodes": [] } } } });
+        assert!(normalize(&body).unwrap().pinned.is_empty());
     }
 
     #[test]
-    fn normalize_survives_an_empty_repo_list() {
-        let g = normalize(&fixture("github_user"), &json!([]));
-        assert!(g.recent.is_empty());
-        assert!(g.languages.is_empty());
-        assert_eq!(g.repos, 23);
+    fn a_graphql_error_with_no_user_is_an_error_not_an_empty_list() {
+        // GraphQL answers 200 even when the query fails.
+        let body = json!({ "data": { "user": null }, "errors": [ { "message": "Could not resolve to a User" } ] });
+        let err = normalize(&body).unwrap_err();
+        assert!(err.0.contains("Could not resolve"), "got: {}", err.0);
+    }
+
+    #[test]
+    fn a_body_with_no_data_is_an_error() {
+        assert!(normalize(&json!({ "message": "Bad credentials" })).is_err());
+    }
+
+    #[tokio::test]
+    async fn fetch_refuses_to_run_without_a_token() {
+        std::env::set_var("GITHUB_USER", "kiiyokami");
+        std::env::remove_var("GITHUB_TOKEN");
+        let err = fetch(&reqwest::Client::new(), &Cache::new()).await.unwrap_err();
+        assert!(err.0.contains("GITHUB_TOKEN"), "got: {}", err.0);
     }
 }

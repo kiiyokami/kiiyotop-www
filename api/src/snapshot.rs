@@ -1,6 +1,6 @@
 use crate::cache::Cache;
 use crate::http::AppError;
-use crate::model::{Now, Snapshot};
+use crate::model::{Github, Now, Snapshot};
 use crate::sources::{discord, github, lastfm, leetify, osu, steam, vndb};
 use axum::{extract::State, Json};
 use serde_json::Value;
@@ -23,7 +23,7 @@ pub fn assemble(
     leetify_raw: Fetched<Value>,
     osu_raw:     Fetched<(Value, Value)>,
     vndb_raw:    Fetched<(Value, Value, Value, Value)>,
-    github_raw:  Fetched<(Value, Value)>,
+    github:      Fetched<Github>,
 ) -> Snapshot {
     let lastfm_ok = lastfm_raw.ok();
     let steam_ok  = steam_raw.ok();
@@ -44,7 +44,7 @@ pub fn assemble(
         osu:    osu_raw.ok().and_then(|(user, best)| osu::normalize(&user, &best)),
         vndb:   vndb_raw.ok().map(|(reading, all, finished, wishlist)|
             vndb::normalize(&reading, &all, &finished, &wishlist)),
-        github: github_raw.ok().map(|(user, repos)| github::normalize(&user, &repos)),
+        github: github.ok(),
     }
 }
 
@@ -58,6 +58,10 @@ pub async fn handler(State(s): State<AppState>) -> Json<Snapshot> {
         vndb::fetch(&s.client, &s.cache),
         github::fetch(&s.client, &s.cache),
     );
+
+    // Normalizing here, not in assemble(), so a GraphQL error body is logged
+    // like any other source failure.
+    let github_raw = github_raw.and_then(|v| github::normalize(&v));
 
     for (name, failure) in [
         ("discord", discord_raw.as_ref().err()),

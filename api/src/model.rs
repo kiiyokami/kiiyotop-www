@@ -149,10 +149,7 @@ pub struct RatedVn {
 
 #[derive(Serialize, Debug, PartialEq)]
 pub struct Github {
-    pub repos:     u64,
-    pub followers: u64,
-    pub languages: Vec<String>,
-    pub recent:    Vec<Repo>,
+    pub pinned: Vec<Repo>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]

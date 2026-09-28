@@ -1,0 +1,24 @@
+{
+  "data": {
+    "user": {
+      "pinnedItems": {
+        "nodes": [
+          {
+            "name": "kiiyotop-www",
+            "description": "Personal homepage.",
+            "url": "https://github.com/kiiyokami/kiiyotop-www",
+            "stargazerCount": 3,
+            "primaryLanguage": { "name": "Svelte" }
+          },
+          {
+            "name": "dotfiles",
+            "description": null,
+            "url": "https://github.com/kiiyokami/dotfiles",
+            "stargazerCount": 0,
+            "primaryLanguage": null
+          }
+        ]
+      }
+    }
+  }
+}
