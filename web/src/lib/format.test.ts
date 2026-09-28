@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { count, hours, percent, decimal } from './format'
+import { clock, count, hours, percent, decimal } from './format'
 
 describe('count', () => {
   it('groups thousands', () => {
@@ -31,5 +31,14 @@ describe('percent', () => {
 describe('decimal', () => {
   it('fixes to two places by default', () => {
     expect(decimal(1.8)).toBe('1.80')
+  })
+})
+
+describe('clock', () => {
+  it('formats the menu-bar date and time in lowercase', () => {
+    expect(clock(new Date(2026, 8, 28, 14, 32))).toEqual({ date: 'mon 28 sep', time: '14:32' })
+  })
+  it('pads hours and minutes', () => {
+    expect(clock(new Date(2026, 0, 4, 9, 5)).time).toBe('09:05')
   })
 })
