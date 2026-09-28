@@ -50,14 +50,19 @@ describe('Taskbar', () => {
 
 describe('DesktopIcons', () => {
   it('has one icon per window plus a GitHub link', () => {
-    const { getAllByRole, getByRole } = render(DesktopIcons, { props: { offset: 0, onopen: vi.fn() } })
+    const { getAllByRole, getByRole } = render(DesktopIcons, { props: { onopen: vi.fn() } })
     expect(getAllByRole('button')).toHaveLength(WINDOW_IDS.length)
     expect(getByRole('link', { name: /GitHub/ })).toHaveAttribute('href', 'https://github.com/kiiyokami')
   })
 
+  it('sits at the desktop edge, not offset into the centred work area', () => {
+    const { container } = render(DesktopIcons, { props: { onopen: vi.fn() } })
+    expect(container.querySelector('.icons')).not.toHaveAttribute('style')
+  })
+
   it('a mouse single click selects, a double click opens', async () => {
     const onopen = vi.fn()
-    const { getByRole } = render(DesktopIcons, { props: { offset: 0, onopen } })
+    const { getByRole } = render(DesktopIcons, { props: { onopen } })
     const icon = getByRole('button', { name: 'music' })
     await fireEvent.pointerDown(icon, { pointerType: 'mouse' })
     await fireEvent.click(icon, { detail: 1 })
@@ -68,7 +73,7 @@ describe('DesktopIcons', () => {
 
   it('keyboard activation and touch taps open straight away', async () => {
     const onopen = vi.fn()
-    const { getByRole } = render(DesktopIcons, { props: { offset: 0, onopen } })
+    const { getByRole } = render(DesktopIcons, { props: { onopen } })
     await fireEvent.click(getByRole('button', { name: 'games' }), { detail: 0 })
     expect(onopen).toHaveBeenLastCalledWith('games')
     const reading = getByRole('button', { name: 'reading' })

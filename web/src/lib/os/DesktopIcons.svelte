@@ -2,7 +2,7 @@
   import { profiles } from '../profiles'
   import { TITLES, WINDOW_IDS, type WinId } from './windows'
 
-  let { offset, onopen }: { offset: number; onopen: (id: WinId) => void } = $props()
+  let { onopen }: { onopen: (id: WinId) => void } = $props()
 
   let selected = $state<WinId | null>(null)
   let pointer = 'mouse'
@@ -15,7 +15,7 @@
   }
 </script>
 
-<div class="icons" style:left="{offset + 14}px">
+<div class="icons">
   {#each WINDOW_IDS as id (id)}
     <button
       type="button"
@@ -34,24 +34,27 @@
 </div>
 
 <style>
+  /* Pinned to the desktop's own edge, like a real desktop, whatever the
+     width: the windows centre, the icons do not. */
   .icons {
     position: absolute;
     top: 16px;
+    left: 16px;
     display: grid;
-    gap: var(--s2);
+    gap: var(--s3);
     z-index: 0;
   }
   .ic {
     display: block;
-    width: 68px;
-    padding: 4px 2px;
+    width: 84px;
+    padding: 6px 2px;
     background: none;
     border: 0;
     cursor: default;
     text-align: center;
     text-decoration: none;
     font-family: var(--mono);
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: var(--text);
   }
   .ic.sel { background: var(--bar); }
@@ -59,27 +62,27 @@
   i {
     position: relative;
     display: block;
-    width: 34px;
-    height: 28px;
-    margin: 0 auto 4px;
+    width: 48px;
+    height: 40px;
+    margin: 0 auto 6px;
     background: var(--win);
     border: 1px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--shadow);
+    box-shadow: 4px 4px 0 var(--shadow);
   }
   i::before {
     content: '';
     position: absolute;
     inset: 0 0 auto 0;
-    height: 6px;
+    height: 8px;
     background: var(--bar);
     border-bottom: 1px solid var(--ink);
   }
   .link i::after {
     content: '↗';
     position: absolute;
-    right: 3px;
-    bottom: 0;
-    font-size: 11px;
+    right: 4px;
+    bottom: 1px;
+    font-size: 14px;
     color: var(--text-2);
   }
 </style>

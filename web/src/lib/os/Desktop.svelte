@@ -3,7 +3,7 @@
   import type { SnapshotState } from '../snapshot'
   import {
     TITLES, WINDOW_IDS, clampAll, close, front, frontId, load, minimize,
-    move, open, resize, save, taskbarClick, tidy, toggleMax, workOffset,
+    move, open, resize, save, taskbarClick, tidy, toggleMax,
     type Bounds, type OsState,
   } from './windows'
   import { toggleTheme } from './theme'
@@ -87,7 +87,7 @@
 
   <main class="area">
     {#if !stacked}
-      <DesktopIcons offset={workOffset(width)} onopen={(id) => apply(open(os, id))} />
+      <DesktopIcons onopen={(id) => apply(open(os, id))} />
     {/if}
 
     {#each WINDOW_IDS as id (id)}
