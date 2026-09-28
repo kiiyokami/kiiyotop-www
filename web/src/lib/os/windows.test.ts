@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
-  WINDOW_IDS, GRAB, MIN_W, MIN_H, TITLE_H, STORAGE_KEY,
+  WINDOW_IDS, MIN_DESK_H, MENUBAR_H, TASKBAR_H, GRAB, MIN_W, MIN_H, TITLE_H, STORAGE_KEY,
   initial, tidy, defaultGeom, workOffset, front, frontId, open, minimize, close, toggleMax,
   taskbarClick, move, resize, clampAll, serialize, parse, load, save,
 } from './windows'
@@ -26,7 +26,7 @@ describe('initial layout', () => {
   it('centres the 1100px work area and never offsets negatively', () => {
     expect(workOffset(1300)).toBe(100)
     expect(workOffset(900)).toBe(0)
-    expect(defaultGeom('now', 1300)).toEqual({ x: 200, y: 18, w: 470, h: 150 })
+    expect(defaultGeom('now', 1300)).toEqual({ x: 200, y: 18, w: 470, h: 140 })
   })
 })
 
@@ -34,6 +34,18 @@ describe('tidy layout', () => {
   it('gives games and socials room for all their rows', () => {
     expect(defaultGeom('games', W).h).toBe(200)
     expect(defaultGeom('socials', W).h).toBe(200)
+  })
+
+  it('fits inside the minimum desktop height', () => {
+    const area = MIN_DESK_H - MENUBAR_H - TASKBAR_H
+    for (const id of WINDOW_IDS) {
+      const g = defaultGeom(id, W)
+      expect(g.y + g.h, id).toBeLessThanOrEqual(area)
+    }
+  })
+
+  it('gives reading the wide slot under now.txt', () => {
+    expect(defaultGeom('reading', W)).toMatchObject({ w: 470, h: 220 })
   })
 
   it('never overlaps two windows', () => {

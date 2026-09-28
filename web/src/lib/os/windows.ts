@@ -27,15 +27,20 @@ export const MIN_W = 200
 export const MIN_H = 100
 export const STORAGE_KEY = 'kiiyoOS:v1'
 
+/** The desktop never gets shorter than this; below it the page scrolls. */
+export const MIN_DESK_H = 700
+export const MENUBAR_H = 26
+export const TASKBAR_H = 30
+
 /** The tidy layout, in coordinates of a 1100px work area. */
 const LAYOUT: Record<WinId, Geom> = {
-  now:      { x: 100, y: 18,  w: 470, h: 150 },
-  music:    { x: 100, y: 190, w: 225, h: 150 },
-  reading:  { x: 345, y: 190, w: 225, h: 150 },
-  projects: { x: 100, y: 362, w: 470, h: 190 },
+  now:      { x: 100, y: 18,  w: 470, h: 140 },
+  reading:  { x: 100, y: 180, w: 470, h: 220 },
+  music:    { x: 100, y: 422, w: 470, h: 170 },
   socials:  { x: 600, y: 18,  w: 210, h: 200 },
   games:    { x: 830, y: 18,  w: 250, h: 200 },
-  terminal: { x: 600, y: 240, w: 480, h: 230 },
+  projects: { x: 600, y: 240, w: 480, h: 210 },
+  terminal: { x: 600, y: 472, w: 480, h: 160 },
 }
 
 export function workOffset(width: number): number {

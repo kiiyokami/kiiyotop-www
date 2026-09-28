@@ -82,6 +82,47 @@ describe('duplicate entries from the APIs', () => {
   })
 })
 
+describe('Reading, with more to show', () => {
+  const vndb = (over = {}) => ({
+    reading: [], rated: [], finished: 0, finished_more: false, wishlist: 0, wishlist_more: false, ...over,
+  })
+
+  it('shows a cover when the server sent one and a blank tile when it withheld it', () => {
+    const { container } = render(Reading, { props: { state: ready({ vndb: vndb({ reading: [
+      { title: 'Safe One', developer: 'Dev', image: 'https://t.vndb.org/cv/1.jpg' },
+      { title: 'Withheld', developer: null, image: null },
+    ] }) }) } })
+    const imgs = container.querySelectorAll('img')
+    expect(imgs).toHaveLength(1)
+    expect(imgs[0]).toHaveAttribute('src', 'https://t.vndb.org/cv/1.jpg')
+    expect(container.querySelectorAll('.tile.blank')).toHaveLength(1)
+  })
+
+  it('lists favourites with their scores', () => {
+    const { getByText } = render(Reading, { props: { state: ready({ vndb: vndb({
+      rated: [{ title: 'Favourite VN', image: null, score: 9.5 }],
+    }) }) } })
+    expect(getByText('Favourite VN')).toBeInTheDocument()
+    expect(getByText('9.5')).toBeInTheDocument()
+  })
+
+  it('counts finished and wishlisted VNs, marking a floor with +', () => {
+    const { getByText } = render(Reading, { props: { state: ready({ vndb: vndb({
+      finished: 100, finished_more: true, wishlist: 3,
+    }) }) } })
+    expect(getByText('100+ finished · 3 wishlist')).toBeInTheDocument()
+  })
+})
+
+describe('Music playlists', () => {
+  it('links the three favourite playlists even when Last.fm is down', () => {
+    const { getByRole } = render(Music, { props: { state: ready() } })
+    expect(getByRole('link', { name: 'the j' })).toHaveAttribute('href', 'https://open.spotify.com/playlist/43xfTDyNQAa9tLKlsMxgOD')
+    expect(getByRole('link', { name: 'hiro shinosawa' })).toHaveAttribute('href', 'https://open.spotify.com/playlist/0Wxr23KwDM6KAUNbjU0WC9')
+    expect(getByRole('link', { name: 'top' })).toHaveAttribute('href', 'https://open.spotify.com/playlist/1Rnwru5jyplPZRUYPgUgTN')
+  })
+})
+
 describe('Reading', () => {
   it('says so when nothing is being read', () => {
     const { getByText } = render(Reading, { props: { state: ready({ vndb: {

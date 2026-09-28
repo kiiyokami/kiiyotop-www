@@ -4,7 +4,7 @@
   import {
     TITLES, WINDOW_IDS, clampAll, close, front, frontId, load, minimize,
     move, open, resize, save, taskbarClick, tidy, toggleMax,
-    type Bounds, type OsState,
+    MENUBAR_H, MIN_DESK_H, TASKBAR_H, type Bounds, type OsState,
   } from './windows'
   import { toggleTheme } from './theme'
   import type { Action } from './terminal'
@@ -25,9 +25,6 @@
   let { state: snapshot }: { state: SnapshotState } = $props()
 
   const DESKTOP_QUERY = '(min-width: 1120px)'
-  const MENUBAR_H = 26
-  const TASKBAR_H = 30
-  const MIN_DESK_H = 640
 
   const viewWidth = () => document.documentElement.clientWidth || window.innerWidth
 
@@ -124,7 +121,7 @@
 <style>
   .desktop {
     position: relative;
-    min-height: max(100vh, 640px);
+    min-height: max(100vh, 700px);
   }
   .area {
     position: absolute;

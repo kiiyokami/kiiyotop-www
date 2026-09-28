@@ -19,3 +19,10 @@ export const profiles = {
 } satisfies Record<string, Profile>
 
 export const socials: Profile[] = [profiles.discord, profiles.linkedin, profiles.instagram, profiles.spotify]
+
+// Names as Spotify's public oEmbed reported them on 2026-09-28.
+export const playlists: Profile[] = [
+  { label: 'the j',          handle: null, url: 'https://open.spotify.com/playlist/43xfTDyNQAa9tLKlsMxgOD' },
+  { label: 'hiro shinosawa', handle: null, url: 'https://open.spotify.com/playlist/0Wxr23KwDM6KAUNbjU0WC9' },
+  { label: 'top',            handle: null, url: 'https://open.spotify.com/playlist/1Rnwru5jyplPZRUYPgUgTN' },
+]
