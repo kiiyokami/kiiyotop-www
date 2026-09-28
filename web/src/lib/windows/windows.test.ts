@@ -1,4 +1,4 @@
-import { render } from '@testing-library/svelte'
+import { fireEvent, render } from '@testing-library/svelte'
 import { describe, expect, it } from 'vitest'
 import type { SnapshotState } from '../snapshot'
 import type { Snapshot } from '../types'
@@ -133,21 +133,64 @@ describe('Reading', () => {
 })
 
 describe('Games', () => {
-  it('renders the profile links while the snapshot is still loading', () => {
-    const { getByRole } = render(Games, { props: { state: loading } })
-    expect(getByRole('link', { name: 'Steam' })).toHaveAttribute('href', 'https://steamcommunity.com/profiles/76561198417657156')
-    expect(getByRole('link', { name: 'CS2' })).toHaveAttribute('href', 'https://leetify.com/app/profile/76561198417657156')
-    expect(getByRole('link', { name: 'osu!' })).toHaveAttribute('href', 'https://osu.ppy.sh/users/-Flux')
-  })
+  const steam = { persona: 'kiiyo', avatar: '', state: 'online' as const, level: 10, friends: 3, recent: [
+    { app_id: 1, name: 'Grand Theft Auto V Legacy', minutes_2weeks: 3198, minutes_total: 9000, thumb: '' },
+  ] }
+  const osu = { username: '-Flux', pp: 5000, rank: 48120, country_rank: 900, accuracy: 98.1, level: 100, playcount: 31000,
+    ss: 12, s: 80, a: 200, best: [
+      { title: 'Song A', artist: 'Artist', version: 'Insane', pp: 310, rank: 'S' },
+      { title: '', artist: '', version: '', pp: 290, rank: 'A' },
+    ] }
+  const cs2 = { rating: 1.23, premier: 21088, faceit: 7, aim: 71.2, utility: 45.5, positioning: 60.1,
+    opening: 12.5, clutch: 9.8, hs_percent: 44.4, winrate: 52.3, matches: 812 }
 
-  it('shows each game on its own and names a failed one', () => {
-    const { getByText } = render(Games, { props: { state: ready({
-      steam: { persona: 'kiiyo', avatar: '', state: 'online', level: 10, friends: 3, recent: [] },
-      osu: { username: '-Flux', pp: 5000, rank: 48120, country_rank: 900, accuracy: 98.1, level: 100, playcount: 1, ss: 0, s: 0, a: 0, best: [] },
-    }) } })
+  it('lists each game with a one-line summary and names a failed one', () => {
+    const { getByText, getByRole } = render(Games, { props: { state: ready({ steam, osu }) } })
+    expect(getByRole('button', { name: /^Steam/ })).toBeInTheDocument()
     expect(getByText('online')).toBeInTheDocument()
     expect(getByText('#48,120 · 98.1%')).toBeInTheDocument()
     expect(getByText("Couldn't reach Leetify.")).toBeInTheDocument()
+  })
+
+  it('opens CS2 details with a header linking to Leetify, and goes back', async () => {
+    const { getByRole, getByText, queryByText } = render(Games, { props: { state: ready({ cs2 }) } })
+    await fireEvent.click(getByRole('button', { name: /^CS2/ }))
+    expect(getByRole('link', { name: 'CS2 ↗' })).toHaveAttribute('href', 'https://leetify.com/app/profile/76561198417657156')
+    expect(getByText('21,088')).toBeInTheDocument()
+    expect(getByText('812')).toBeInTheDocument()
+    expect(getByText('44.4%')).toBeInTheDocument()
+    await fireEvent.click(getByRole('button', { name: '← games' }))
+    expect(queryByText('812')).toBeNull()
+    expect(getByRole('button', { name: /^CS2/ })).toBeInTheDocument()
+  })
+
+  it('opens osu! details with grade counts and top plays', async () => {
+    const { getByRole, getByText } = render(Games, { props: { state: ready({ osu }) } })
+    await fireEvent.click(getByRole('button', { name: /^osu!/ }))
+    expect(getByRole('link', { name: 'osu! ↗' })).toHaveAttribute('href', 'https://osu.ppy.sh/users/-Flux')
+    expect(getByText('12 / 80 / 200')).toBeInTheDocument()
+    expect(getByText('Song A [Insane]')).toBeInTheDocument()
+    expect(getByText('Unknown beatmap')).toBeInTheDocument()
+  })
+
+  it('opens Steam details with recently played hours', async () => {
+    const { getByRole, getByText } = render(Games, { props: { state: ready({ steam }) } })
+    await fireEvent.click(getByRole('button', { name: /^Steam/ }))
+    expect(getByRole('link', { name: 'Steam ↗' })).toHaveAttribute('href', 'https://steamcommunity.com/profiles/76561198417657156')
+    expect(getByText('Grand Theft Auto V Legacy')).toBeInTheDocument()
+    expect(getByText('53.3h')).toBeInTheDocument()
+  })
+
+  it('still offers the profile link from a detail view while loading or failed', async () => {
+    const failed = render(Games, { props: { state: ready() } })
+    await fireEvent.click(failed.getByRole('button', { name: /^osu!/ }))
+    expect(failed.getByRole('link', { name: 'osu! ↗' })).toBeInTheDocument()
+    expect(failed.getByText("Couldn't reach osu!.")).toBeInTheDocument()
+    failed.unmount()
+
+    const pending = render(Games, { props: { state: loading } })
+    await fireEvent.click(pending.getByRole('button', { name: /^CS2/ }))
+    expect(pending.getByRole('link', { name: 'CS2 ↗' })).toBeInTheDocument()
   })
 })
 

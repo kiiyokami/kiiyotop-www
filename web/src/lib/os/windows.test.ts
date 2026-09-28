@@ -31,9 +31,9 @@ describe('initial layout', () => {
 })
 
 describe('tidy layout', () => {
-  it('gives games and socials room for all their rows', () => {
-    expect(defaultGeom('games', W).h).toBe(200)
-    expect(defaultGeom('socials', W).h).toBe(200)
+  it('gives games the wide slot for its detail views, and socials room for four rows', () => {
+    expect(defaultGeom('games', W)).toMatchObject({ w: 480, h: 230 })
+    expect(defaultGeom('socials', W).h).toBeGreaterThanOrEqual(156)
   })
 
   it('fits inside the minimum desktop height', () => {

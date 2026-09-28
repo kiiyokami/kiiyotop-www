@@ -37,10 +37,10 @@ const LAYOUT: Record<WinId, Geom> = {
   now:      { x: 100, y: 18,  w: 470, h: 140 },
   reading:  { x: 100, y: 180, w: 470, h: 220 },
   music:    { x: 100, y: 422, w: 470, h: 170 },
-  socials:  { x: 600, y: 18,  w: 210, h: 200 },
-  games:    { x: 830, y: 18,  w: 250, h: 200 },
-  projects: { x: 600, y: 240, w: 480, h: 210 },
-  terminal: { x: 600, y: 472, w: 480, h: 160 },
+  socials:  { x: 600, y: 486, w: 210, h: 156 },
+  games:    { x: 600, y: 18,  w: 480, h: 230 },
+  projects: { x: 600, y: 270, w: 480, h: 200 },
+  terminal: { x: 830, y: 486, w: 250, h: 156 },
 }
 
 export function workOffset(width: number): number {
