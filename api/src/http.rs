@@ -64,14 +64,14 @@ pub async fn get_json(
 pub async fn post_json(
     client: &reqwest::Client,
     url: &str,
+    headers: &[(&str, &str)],
     body: &Value,
 ) -> Result<Value, AppError> {
-    let resp = client
-        .post(url)
-        .json(body)
-        .send()
-        .await
-        .map_err(|e| AppError(e.without_url().to_string()))?;
+    let mut req = client.post(url).json(body);
+    for (k, v) in headers {
+        req = req.header(*k, *v);
+    }
+    let resp = req.send().await.map_err(|e| AppError(e.without_url().to_string()))?;
     let status = resp.status();
     if !status.is_success() {
         return Err(AppError(format!("{status} from {}", redact_url(url))));
@@ -85,7 +85,7 @@ pub async fn post_json(
 mod tests {
     use super::*;
     use wiremock::{Mock, MockServer, ResponseTemplate};
-    use wiremock::matchers::{method, path};
+    use wiremock::matchers::{header, method, path};
 
     #[test]
     fn env_reports_the_missing_key_by_name() {
@@ -165,7 +165,7 @@ mod tests {
         let client = reqwest::Client::new();
         let url = format!("{}/test", mock_server.uri());
         let body = serde_json::json!({"input": "data"});
-        let result = post_json(&client, &url, &body).await;
+        let result = post_json(&client, &url, &[], &body).await;
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap()["result"], "ok");
@@ -184,12 +184,32 @@ mod tests {
         let client = reqwest::Client::new();
         let url = format!("{}/test", mock_server.uri());
         let body = serde_json::json!({"input": "data"});
-        let result = post_json(&client, &url, &body).await;
+        let result = post_json(&client, &url, &[], &body).await;
 
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.0.contains("500"), "error should contain status code: {}", err.0);
         assert!(err.0.contains("/test"), "error should contain path: {}", err.0);
+    }
+
+    #[tokio::test]
+    async fn post_json_sends_the_given_headers() {
+        let mock_server = MockServer::start().await;
+
+        Mock::given(method("POST"))
+            .and(path("/graphql"))
+            .and(header("authorization", "Bearer t0ken"))
+            .and(header("user-agent", "kiiyotop-api"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({"ok": true})))
+            .mount(&mock_server)
+            .await;
+
+        let client = reqwest::Client::new();
+        let url = format!("{}/graphql", mock_server.uri());
+        let headers = [("Authorization", "Bearer t0ken"), ("User-Agent", "kiiyotop-api")];
+        let result = post_json(&client, &url, &headers, &serde_json::json!({})).await;
+
+        assert!(result.is_ok(), "the mock only matches when both headers arrive: {result:?}");
     }
 
     #[tokio::test]
@@ -227,7 +247,7 @@ mod tests {
         let client = reqwest::Client::new();
         let url = format!("{}/api/endpoint?key=SHOULD_NOT_APPEAR&user=123", mock_server.uri());
         let body = serde_json::json!({"data": "test"});
-        let result = post_json(&client, &url, &body).await;
+        let result = post_json(&client, &url, &[], &body).await;
 
         assert!(result.is_err());
         let err = result.unwrap_err();
@@ -260,7 +280,7 @@ mod tests {
         let client = reqwest::Client::new();
         let url = "http://127.0.0.1:1/api/endpoint?key=SHOULD_NOT_APPEAR&user=123";
         let body = serde_json::json!({"data": "test"});
-        let result = post_json(&client, url, &body).await;
+        let result = post_json(&client, url, &[], &body).await;
 
         assert!(result.is_err());
         let err = result.unwrap_err();

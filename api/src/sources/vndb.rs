@@ -93,10 +93,10 @@ pub async fn fetch(
     }));
 
     let (reading, all, finished, wishlist) = tokio::join!(
-        post_json(client, ENDPOINT, &reading_body),
-        post_json(client, ENDPOINT, &all_body),
-        post_json(client, ENDPOINT, &finished_body),
-        post_json(client, ENDPOINT, &wishlist_body),
+        post_json(client, ENDPOINT, &[], &reading_body),
+        post_json(client, ENDPOINT, &[], &all_body),
+        post_json(client, ENDPOINT, &[], &finished_body),
+        post_json(client, ENDPOINT, &[], &wishlist_body),
     );
     let (reading, all, finished, wishlist) = (reading?, all?, finished?, wishlist?);
 

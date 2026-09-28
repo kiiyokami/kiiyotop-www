@@ -7,7 +7,7 @@ pub mod steam;
 pub mod vndb;
 
 use crate::cache::Cache;
-use crate::http::{get_json, AppError};
+use crate::http::{get_json, post_json, AppError};
 use serde_json::Value;
 use std::time::Duration;
 
@@ -29,10 +29,60 @@ pub(crate) async fn cached_get(
     Ok(fresh)
 }
 
+/// The POST twin of `cached_get`, for APIs that take their query in the body
+/// (GitHub GraphQL). The key must identify the query, since the body is not
+/// part of it.
+pub(crate) async fn cached_post(
+    client: &reqwest::Client,
+    cache: &Cache,
+    key: &str,
+    ttl: Duration,
+    url: &str,
+    headers: &[(&str, &str)],
+    body: &Value,
+) -> Result<Value, AppError> {
+    if let Some(hit) = cache.get(key, ttl).await {
+        return Ok(hit);
+    }
+    let fresh = post_json(client, url, headers, body).await?;
+    cache.put(key, fresh.clone()).await;
+    Ok(fresh)
+}
+
 #[cfg(test)]
 pub(crate) fn fixture(name: &str) -> Value {
     let path = format!("{}/tests/fixtures/{name}.json", env!("CARGO_MANIFEST_DIR"));
     let text = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("reading {path}: {e}"));
     serde_json::from_str(&text).unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    #[tokio::test]
+    async fn cached_post_serves_the_second_call_from_the_cache() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/q"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({"n": 1})))
+            .expect(1)
+            .mount(&server)
+            .await;
+
+        let client = reqwest::Client::new();
+        let cache = Cache::new();
+        let url = format!("{}/q", server.uri());
+        let body = serde_json::json!({"query": "x"});
+        let ttl = Duration::from_secs(60);
+
+        let first = cached_post(&client, &cache, "k", ttl, &url, &[], &body).await.unwrap();
+        let second = cached_post(&client, &cache, "k", ttl, &url, &[], &body).await.unwrap();
+
+        assert_eq!(first, second);
+        // MockServer verifies `.expect(1)` when it drops: a second request fails the test.
+    }
 }
