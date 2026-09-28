@@ -2,7 +2,7 @@ import { fireEvent, render } from '@testing-library/svelte'
 import { beforeEach, expect, test } from 'vitest'
 import type { SnapshotState } from '../snapshot'
 import Desktop from './Desktop.svelte'
-import { STORAGE_KEY, TITLES, WINDOW_IDS, initial, load, serialize } from './windows'
+import { STORAGE_KEY, TITLES, initial, load, serialize } from './windows'
 
 const state: SnapshotState = {
   status: 'ready',
