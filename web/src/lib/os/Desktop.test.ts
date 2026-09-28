@@ -2,7 +2,7 @@ import { fireEvent, render } from '@testing-library/svelte'
 import { beforeEach, expect, test } from 'vitest'
 import type { SnapshotState } from '../snapshot'
 import Desktop from './Desktop.svelte'
-import { STORAGE_KEY, TITLES, WINDOW_IDS } from './windows'
+import { STORAGE_KEY, TITLES, WINDOW_IDS, initial, load, serialize } from './windows'
 
 const state: SnapshotState = {
   status: 'ready',
@@ -51,4 +51,13 @@ test('the terminal can reopen a closed window', async () => {
   await fireEvent.input(input, { target: { value: 'projects' } })
   await fireEvent.submit(input.closest('form')!)
   expect(getByRole('region', { name: 'projects' })).toBeInTheDocument()
+})
+
+test('using the stacked layout does not overwrite the saved desktop layout', async () => {
+  localStorage.setItem(STORAGE_KEY, serialize(initial(2560), 2560))
+  const { getByRole } = render(Desktop, { props: { state } })
+  await fireEvent.click(getByRole('button', { name: 'Minimize reading' }))
+  const back = load(2560)
+  expect(back.windows.games).toEqual(initial(2560).windows.games)
+  expect(back.windows.reading.hidden).toBe(true)
 })

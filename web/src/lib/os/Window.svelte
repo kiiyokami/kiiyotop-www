@@ -125,6 +125,8 @@
   }
   .stacked .tb, .maxed .tb { cursor: default; touch-action: auto; }
   .focused .tb { background: var(--accent); color: var(--win); }
+  /* The accent focus ring would vanish on the accent title bar. */
+  .focused .tb :focus-visible { outline-color: var(--win); }
 
   h2 { font: inherit; font-weight: 500; }
 

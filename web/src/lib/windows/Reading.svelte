@@ -17,7 +17,7 @@
   <p class="note">{unreachable('VNDB')}</p>
 {:else if d.reading.length > 0}
   <ul>
-    {#each d.reading.slice(0, 4) as vn (vn.title)}
+    {#each d.reading.slice(0, 4) as vn, i (i)}
       <li>{vn.title}</li>
     {/each}
   </ul>

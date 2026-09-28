@@ -64,6 +64,24 @@ describe('Music', () => {
   })
 })
 
+describe('duplicate entries from the APIs', () => {
+  it('Music renders a track that appears twice in the recent list', () => {
+    const t = { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false }
+    const { getAllByText } = render(Music, { props: { state: ready({ lastfm: {
+      total_scrobbles: 2, top_artists: [], top_tracks: [], genres: [], recent: [t, t],
+    } }) } })
+    expect(getAllByText('Ame wo Matsu')).toHaveLength(2)
+  })
+
+  it('Reading renders two entries with the same title', () => {
+    const vn = { title: 'Same Title', developer: null, image: null }
+    const { getAllByText } = render(Reading, { props: { state: ready({ vndb: {
+      reading: [vn, vn], rated: [], finished: 0, finished_more: false, wishlist: 0, wishlist_more: false,
+    } }) } })
+    expect(getAllByText('Same Title')).toHaveLength(2)
+  })
+})
+
 describe('Reading', () => {
   it('says so when nothing is being read', () => {
     const { getByText } = render(Reading, { props: { state: ready({ vndb: {

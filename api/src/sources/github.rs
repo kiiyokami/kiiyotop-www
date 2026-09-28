@@ -48,7 +48,7 @@ pub async fn fetch(client: &reqwest::Client, cache: &Cache) -> Result<Value, App
     let headers = [("User-Agent", "kiiyotop-api"), ("Authorization", auth.as_str())];
     let body = json!({ "query": QUERY, "variables": { "login": login } });
 
-    cached_post(client, cache, "github:pinned", TTL, ENDPOINT, &headers, &body).await
+    cached_post(client, cache, "github:pinned", TTL, ENDPOINT, &headers, &body, |v| normalize(v).map(|_| ())).await
 }
 
 #[cfg(test)]

@@ -109,14 +109,26 @@ export function resize(s: OsState, id: WinId, w: number, h: number, b: Bounds): 
   return patch(s, id, clampGeom({ ...s.windows[id], w, h }, b))
 }
 
+/** Stricter than a drag: after a resize or load the whole window fits, so no
+ *  control ends up off screen. */
+function fitGeom(g: Geom, b: Bounds): Geom {
+  const w = Math.min(Math.max(g.w, MIN_W), Math.max(MIN_W, b.width))
+  const h = Math.min(Math.max(g.h, MIN_H), Math.max(MIN_H, b.height))
+  const x = Math.min(Math.max(g.x, 0), Math.max(0, b.width - w))
+  const y = Math.min(Math.max(g.y, 0), Math.max(0, b.height - h))
+  return { x, y, w, h }
+}
+
 export function clampAll(s: OsState, b: Bounds): OsState {
   let next = s
-  for (const id of WINDOW_IDS) next = patch(next, id, clampGeom(next.windows[id], b))
+  for (const id of WINDOW_IDS) next = patch(next, id, fitGeom(next.windows[id], b))
   return next
 }
 
-export function serialize(s: OsState): string {
-  return JSON.stringify(s)
+/** Records the work-area offset alongside the layout, so a load on another
+ *  screen width can shift windows by the difference instead of by nothing. */
+export function serialize(s: OsState, width: number): string {
+  return JSON.stringify({ ...s, offset: workOffset(width) })
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -141,10 +153,11 @@ export function parse(raw: string | null, width: number): OsState {
   if (!isRecord(data) || !isRecord(data.windows)) return base
 
   const saved = data.windows
+  const shift = typeof data.offset === 'number' && Number.isFinite(data.offset) ? workOffset(width) - data.offset : 0
   const windows = { ...base.windows }
   for (const id of WINDOW_IDS) {
     const w = saved[id]
-    if (isWin(w)) windows[id] = { x: w.x, y: w.y, w: w.w, h: w.h, hidden: w.hidden, max: w.max }
+    if (isWin(w)) windows[id] = { x: w.x + shift, y: w.y, w: w.w, h: w.h, hidden: w.hidden, max: w.max }
   }
 
   const order: WinId[] = [...new Set(Array.isArray(data.order) ? data.order.filter(isId) : [])]
@@ -162,9 +175,9 @@ export function load(width: number): OsState {
   }
 }
 
-export function save(s: OsState): void {
+export function save(s: OsState, width: number): void {
   try {
-    localStorage.setItem(STORAGE_KEY, serialize(s))
+    localStorage.setItem(STORAGE_KEY, serialize(s, width))
   } catch {
     // Storage blocked: the layout lasts for this visit only.
   }

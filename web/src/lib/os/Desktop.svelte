@@ -42,7 +42,7 @@
   function apply(next: OsState) {
     if (next === os) return
     os = next
-    save(next)
+    save(next, width)
   }
 
   function onaction(a: Action) {
@@ -51,16 +51,25 @@
     else if (a.type === 'tidy') apply(initial(width))
   }
 
+  // Stacked mode ignores geometry, so it never clamps it: clamping to a phone
+  // width and then saving on the next tap would squash the desktop layout.
+  function fit() {
+    if (!stacked) os = clampAll(os, bounds)
+  }
+
   onMount(() => {
-    os = clampAll(os, bounds)
+    fit()
     const mq = window.matchMedia(DESKTOP_QUERY)
-    const onQuery = () => { stacked = !mq.matches }
-    // Clamped for this viewport but not saved, so a layout made on a big
+    const onQuery = () => {
+      stacked = !mq.matches
+      fit()
+    }
+    // Fitted to this viewport but not saved, so a layout made on a big
     // monitor survives a visit from a small one.
     const onResize = () => {
       width = viewWidth()
       height = window.innerHeight
-      os = clampAll(os, bounds)
+      fit()
     }
     mq.addEventListener('change', onQuery)
     window.addEventListener('resize', onResize)
@@ -95,7 +104,7 @@
         onmax={() => apply(toggleMax(os, id))}
         onmove={(x, y) => { os = move(os, id, x, y, bounds) }}
         onresize={(w, h) => { os = resize(os, id, w, h, bounds) }}
-        onsettle={() => save(os)}
+        onsettle={() => save(os, width)}
       >
         {#if id === 'now'}<Now state={snapshot} />
         {:else if id === 'music'}<Music state={snapshot} />

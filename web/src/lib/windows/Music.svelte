@@ -24,7 +24,8 @@
 {:else if d.recent.length > 0}
   <!-- The monthly chart lags behind real scrobbles; show those instead. -->
   <ul>
-    {#each d.recent.slice(0, 3) as t (t.name + t.artist)}
+    <!-- Keyed by position: the same track often appears twice in a row. -->
+    {#each d.recent.slice(0, 3) as t, i (i)}
       <li><span class="name">{t.name}</span> <span class="num">{t.artist}</span></li>
     {/each}
   </ul>

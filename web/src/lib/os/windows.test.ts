@@ -115,12 +115,34 @@ describe('clamping', () => {
   })
 })
 
+describe('moving between screen sizes', () => {
+  it('keeps a saved window in the same place relative to the centred work area', () => {
+    save(initial(2560), 2560)
+    const loaded = load(1280)
+    expect(loaded.windows.now.x).toBe(defaultGeom('now', 1280).x)
+    expect(loaded.windows.games.x).toBe(defaultGeom('games', 1280).x)
+    localStorage.clear()
+  })
+
+  it('clampAll brings whole windows back on screen, not just their title bars', () => {
+    const b = { width: 1280, height: 600 }
+    const moved = move(initial(2560), 'games', 2300, 900, { width: 2560, height: 1300 })
+    const s = clampAll(moved, b)
+    for (const id of WINDOW_IDS) {
+      const w = s.windows[id]
+      expect(w.x).toBeGreaterThanOrEqual(0)
+      expect(w.x + w.w).toBeLessThanOrEqual(b.width)
+      expect(w.y + w.h).toBeLessThanOrEqual(b.height)
+    }
+  })
+})
+
 describe('persistence', () => {
   afterEach(() => localStorage.clear())
 
   it('round-trips through serialize and parse', () => {
     const s = minimize(move(initial(W), 'music', 400, 200, B), 'reading')
-    expect(parse(serialize(s), W)).toEqual(s)
+    expect(parse(serialize(s, W), W)).toEqual(s)
   })
 
   it('falls back to the tidy layout on missing or garbage data', () => {
@@ -148,7 +170,7 @@ describe('persistence', () => {
   })
 
   it('save then load restores the layout', () => {
-    save(minimize(initial(W), 'music'))
+    save(minimize(initial(W), 'music'), W)
     expect(localStorage.getItem(STORAGE_KEY)).not.toBeNull()
     expect(load(W).windows.music.hidden).toBe(true)
   })
@@ -167,7 +189,7 @@ describe('persistence', () => {
     const original = Storage.prototype.setItem
     Storage.prototype.setItem = () => { throw new Error('denied') }
     try {
-      expect(() => save(initial(W))).not.toThrow()
+      expect(() => save(initial(W), W)).not.toThrow()
     } finally {
       Storage.prototype.setItem = original
     }

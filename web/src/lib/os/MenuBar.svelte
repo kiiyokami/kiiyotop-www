@@ -41,6 +41,9 @@
   button { background: none; border: 0; cursor: pointer; padding: 2px 4px; font-family: var(--mono); font-size: inherit; }
   button:hover { text-decoration: underline; }
   .sp { flex: 1; }
+  /* Stacked mode is the touch layout: grow the bar to 44px tap targets. */
+  :global(.stacked) .menubar { height: auto; min-height: 44px; }
+  :global(.stacked) button { min-height: 44px; }
   @media (max-width: 480px) {
     .date { display: none; }
     .menubar { gap: var(--s2); }
