@@ -30,7 +30,8 @@ export const TITLE_H = 24
 export const GRAB = 80
 export const MIN_W = 200
 export const MIN_H = 100
-export const STORAGE_KEY = 'kiiyoOS:v1'
+// v2: startup opens the terminal. v1 saves predate that and would keep it closed.
+export const STORAGE_KEY = 'kiiyoOS:v2'
 
 /** The desktop never gets shorter than this; below it the page scrolls. */
 export const MIN_DESK_H = 700
@@ -41,7 +42,7 @@ export const TASKBAR_H = 30
 export const TOP = 18
 export const GAP = 22
 
-/** Which windows each docked window stacks under. Socials and terminal share a row. */
+/** Which windows each docked window stacks under. */
 const ABOVE: Record<WinId, WinId[]> = {
   now: [],
   reading: ['now'],
@@ -49,7 +50,7 @@ const ABOVE: Record<WinId, WinId[]> = {
   games: [],
   projects: ['games'],
   socials: ['projects'],
-  terminal: ['projects'],
+  terminal: ['socials'],
 }
 
 /** The tidy layout, in coordinates of a 1100px work area. y and h are the
@@ -61,7 +62,7 @@ const LAYOUT: Record<WinId, Geom> = {
   socials:  { x: 600, y: 486, w: 210, h: 156 },
   games:    { x: 600, y: 18,  w: 480, h: 230 },
   projects: { x: 600, y: 270, w: 480, h: 200 },
-  terminal: { x: 830, y: 486, w: 250, h: 156 },
+  terminal: { x: 600, y: 664, w: 480, h: 300 },
 }
 
 export function workOffset(width: number): number {

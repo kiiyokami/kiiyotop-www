@@ -56,12 +56,14 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 8rem;
+    min-height: 16rem;
     font-family: var(--mono);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     line-height: 1.5;
   }
-  .log { flex: 1; overflow: auto; color: var(--text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+  /* The window fits its content, so the log needs its own cap or every
+     command would grow the terminal down the page. */
+  .log { flex: 1; overflow: auto; max-height: 28rem; color: var(--text-2); white-space: pre-wrap; overflow-wrap: anywhere; }
   form { display: flex; gap: var(--s2); align-items: baseline; }
   .prompt { color: var(--accent); flex: none; }
   input {

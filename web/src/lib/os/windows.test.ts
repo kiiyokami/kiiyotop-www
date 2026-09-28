@@ -36,12 +36,23 @@ describe('tidy layout', () => {
     expect(defaultGeom('socials', W).h).toBeGreaterThanOrEqual(156)
   })
 
-  it('fits inside the minimum desktop height', () => {
+  it('fits the startup desktop inside the minimum desktop height', () => {
     const area = MIN_DESK_H - MENUBAR_H - TASKBAR_H
-    for (const id of WINDOW_IDS) {
-      const g = defaultGeom(id, W)
-      expect(g.y + g.h, id).toBeLessThanOrEqual(area)
+    const s = initial(W)
+    const g = flow(s, {}, W)
+    for (const id of WINDOW_IDS.filter((i) => !s.windows[i].hidden)) {
+      expect(g[id].y + g[id].h, id).toBeLessThanOrEqual(area)
     }
+  })
+
+  it('gives the terminal the full right-column width, at the top on startup', () => {
+    expect(defaultGeom('terminal', W)).toMatchObject({ x: defaultGeom('games', W).x, w: 480 })
+    expect(defaultGeom('terminal', W).h).toBeGreaterThanOrEqual(260)
+    expect(flow(initial(W), {}, W).terminal.y).toBe(TOP)
+  })
+
+  it('stores layouts under a new key, so saves from before startup opened the terminal are ignored', () => {
+    expect(STORAGE_KEY).toBe('kiiyoOS:v2')
   })
 
   it('gives reading the wide slot under now.txt', () => {
@@ -75,7 +86,7 @@ describe('auto-fit and stacking', () => {
     expect(g.music.y).toBe(TOP + 100 + GAP + 300 + GAP)
     expect(g.projects.y).toBe(TOP + 400 + GAP)
     expect(g.socials.y).toBe(TOP + 400 + GAP + 250 + GAP)
-    expect(g.terminal.y).toBe(g.socials.y)
+    expect(g.terminal.y).toBe(g.socials.y + 120 + GAP)
     expect(g.reading.h).toBe(300)
   })
 
