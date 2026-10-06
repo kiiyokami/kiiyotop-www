@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { SnapshotState } from '../snapshot'
-  import { ECHO_MAX, PROMPT, append, run, type Action } from '../os/terminal'
+  import { ECHO_MAX, PROMPT, SCROLLBACK, append, run, type Action } from '../os/terminal'
   import { theme } from '../os/theme'
 
   // Renamed locally: with a binding called `state` in scope, Svelte reads the
@@ -19,11 +19,24 @@
     field?.focus()
   }
 
+  // Newest first, so index 0 is the last command and -1 is the empty line.
+  let history = $state<string[]>([])
+  let at = $state(-1)
+
+  function recall(e: KeyboardEvent) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return
+    e.preventDefault()
+    at = Math.min(Math.max(at + (e.key === 'ArrowUp' ? 1 : -1), -1), history.length - 1)
+    input = at < 0 ? '' : history[at]
+  }
+
   function submit(e: SubmitEvent) {
     e.preventDefault()
     const typed = input.trim()
     input = ''
+    at = -1
     if (!typed) return
+    history = [typed, ...history].slice(0, SCROLLBACK)
 
     const result = run(typed, { snapshot, theme: $theme })
     if (result.action?.type === 'clear') {
@@ -54,6 +67,7 @@
     <input
       bind:this={field}
       bind:value={input}
+      onkeydown={recall}
       aria-label="terminal command"
       autocomplete="off"
       autocapitalize="off"

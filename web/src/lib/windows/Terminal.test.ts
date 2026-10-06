@@ -60,3 +60,22 @@ test('clicking anywhere in the terminal takes the caret', async () => {
   await fireEvent.click(container.querySelector('.log')!)
   expect(document.activeElement).toBe(getByRole('textbox', { name: 'terminal command' }))
 })
+
+test('up and down walk the commands already run', async () => {
+  const { getByRole } = render(Terminal, { props: { state, onaction: vi.fn() } })
+  const input = getByRole('textbox', { name: 'terminal command' }) as HTMLInputElement
+  await type(input, 'whoami')
+  await type(input, 'ls')
+
+  await fireEvent.keyDown(input, { key: 'ArrowUp' })
+  expect(input.value).toBe('ls')
+  await fireEvent.keyDown(input, { key: 'ArrowUp' })
+  expect(input.value).toBe('whoami')
+  await fireEvent.keyDown(input, { key: 'ArrowUp' })
+  expect(input.value).toBe('whoami')
+
+  await fireEvent.keyDown(input, { key: 'ArrowDown' })
+  expect(input.value).toBe('ls')
+  await fireEvent.keyDown(input, { key: 'ArrowDown' })
+  expect(input.value).toBe('')
+})
