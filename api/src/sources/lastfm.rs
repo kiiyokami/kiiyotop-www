@@ -1,6 +1,6 @@
 use crate::cache::Cache;
 use crate::http::{env, AppError};
-use crate::model::{Lastfm, TopArtist, TopTrack, Track};
+use crate::model::{Lastfm, TopArtist, Track};
 use crate::sources::cached_get;
 use serde_json::Value;
 use std::time::Duration;
@@ -44,7 +44,7 @@ pub fn now_playing(recent: &Value) -> Option<Track> {
     if track.live { Some(track) } else { None }
 }
 
-pub fn normalize(recent: &Value, artists: &Value, tracks: &Value, genres: Vec<String>) -> Lastfm {
+pub fn normalize(recent: &Value, artists: &Value) -> Lastfm {
     let all: Vec<Track> = recent["recenttracks"]["track"]
         .as_array()
         .map(|a| a.iter().map(track_of).collect())
@@ -60,77 +60,27 @@ pub fn normalize(recent: &Value, artists: &Value, tracks: &Value, genres: Vec<St
                 playcount: count(&x["playcount"]),
             }).collect())
             .unwrap_or_default(),
-        top_tracks: tracks["toptracks"]["track"]
-            .as_array()
-            .map(|a| a.iter().take(5).map(|x| TopTrack {
-                name: x["name"].as_str().unwrap_or_default().to_string(),
-                artist: x["artist"]["name"].as_str().unwrap_or_default().to_string(),
-                playcount: count(&x["playcount"]),
-            }).collect())
-            .unwrap_or_default(),
-        genres,
     }
 }
 
 pub async fn fetch(
     client: &reqwest::Client,
     cache: &Cache,
-) -> Result<(Value, Value, Value, Vec<String>), AppError> {
+) -> Result<(Value, Value), AppError> {
     let key = env("LASTFM_API_KEY")?;
     let user = env("LASTFM_USER")?;
     let base = "https://ws.audioscrobbler.com/2.0/";
 
     let recent_url = format!("{base}?method=user.getrecenttracks&user={user}&api_key={key}&limit=6&format=json");
     let artists_url = format!("{base}?method=user.gettopartists&user={user}&api_key={key}&limit=5&period=1month&format=json");
-    let tracks_url = format!("{base}?method=user.gettoptracks&user={user}&api_key={key}&limit=5&period=1month&format=json");
 
-    let (recent, artists, tracks) = tokio::join!(
+    let (recent, artists) = tokio::join!(
         cached_get(client, cache, "lastfm:recent", RECENT_TTL, &recent_url, &[]),
         cached_get(client, cache, "lastfm:artists", SLOW_TTL, &artists_url, &[]),
-        cached_get(client, cache, "lastfm:tracks", SLOW_TTL, &tracks_url, &[]),
     );
-    let (recent, artists, tracks) = (recent?, artists?, tracks?);
-
-    let genres = top_genres(client, cache, &key, &artists).await;
-    Ok((recent, artists, tracks, genres))
+    Ok((recent?, artists?))
 }
 
-/// Genres are derived from the tags of the top three artists, which is what the
-/// old frontend did. Tag lookups are best effort: a failure yields fewer genres
-/// rather than failing the whole source.
-async fn top_genres(
-    client: &reqwest::Client,
-    cache: &Cache,
-    key: &str,
-    artists: &Value,
-) -> Vec<String> {
-    let names: Vec<String> = artists["topartists"]["artist"]
-        .as_array()
-        .map(|a| a.iter().take(3)
-            .filter_map(|x| x["name"].as_str().map(str::to_string))
-            .collect())
-        .unwrap_or_default();
-
-    let mut counts: std::collections::HashMap<String, u64> = std::collections::HashMap::new();
-    for name in names {
-        let url = format!(
-            "https://ws.audioscrobbler.com/2.0/?method=artist.gettoptags&artist={}&api_key={key}&format=json",
-            urlencoding::encode(&name)
-        );
-        let cache_key = format!("lastfm:tags:{name}");
-        let Ok(tags) = cached_get(client, cache, &cache_key, SLOW_TTL, &url, &[]).await else { continue };
-        let Some(list) = tags["toptags"]["tag"].as_array() else { continue };
-        for tag in list.iter().take(5) {
-            if let Some(t) = tag["name"].as_str() {
-                *counts.entry(t.to_lowercase()).or_insert(0) += 1;
-            }
-        }
-    }
-
-    let mut ranked: Vec<(String, u64)> = counts.into_iter().collect();
-    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
-    ranked.into_iter().take(6).map(|(t, _)| t).collect()
-}
 
 #[cfg(test)]
 mod tests {
@@ -163,8 +113,6 @@ mod tests {
         let l = normalize(
             &fixture("lastfm_recent"),
             &fixture("lastfm_top_artists"),
-            &fixture("lastfm_top_tracks"),
-            vec![],
         );
         assert_eq!(l.total_scrobbles, 48213);
     }
@@ -174,8 +122,6 @@ mod tests {
         let l = normalize(
             &fixture("lastfm_recent"),
             &fixture("lastfm_top_artists"),
-            &fixture("lastfm_top_tracks"),
-            vec![],
         );
         let past = l.recent.iter().find(|t| t.name == "Past Song").unwrap();
         assert_eq!(past.art, None, "the known placeholder hash must not become an <img> src");
@@ -186,25 +132,18 @@ mod tests {
         let l = normalize(
             &fixture("lastfm_recent"),
             &fixture("lastfm_top_artists"),
-            &fixture("lastfm_top_tracks"),
-            vec!["shoegaze".into()],
         );
         assert_eq!(l.top_artists[0], crate::model::TopArtist {
             name: "Artist One".into(), playcount: 412,
         });
-        assert_eq!(l.top_tracks[0], crate::model::TopTrack {
-            name: "Track One".into(), artist: "Artist One".into(), playcount: 51,
-        });
-        assert_eq!(l.genres, vec!["shoegaze".to_string()]);
     }
 
     #[test]
     fn normalize_survives_a_completely_empty_response() {
         let empty = serde_json::json!({});
-        let l = normalize(&empty, &empty, &empty, vec![]);
+        let l = normalize(&empty, &empty);
         assert_eq!(l.total_scrobbles, 0);
         assert!(l.recent.is_empty());
         assert!(l.top_artists.is_empty());
-        assert!(l.top_tracks.is_empty());
     }
 }

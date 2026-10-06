@@ -47,7 +47,7 @@ describe('Music', () => {
 
   it('lists top artists and links to the profile', () => {
     const { getByText, getByRole } = render(Music, { props: { state: ready({ lastfm: {
-      total_scrobbles: 12431, recent: [], top_tracks: [], genres: [],
+      total_scrobbles: 12431, recent: [],
       top_artists: [{ name: 'Lamp', playcount: 214 }],
     } }) } })
     expect(getByText('Lamp')).toBeInTheDocument()
@@ -57,7 +57,7 @@ describe('Music', () => {
 
   it('falls back to recent tracks when the chart is empty', () => {
     const { getByText } = render(Music, { props: { state: ready({ lastfm: {
-      total_scrobbles: 5, top_artists: [], top_tracks: [], genres: [],
+      total_scrobbles: 5, top_artists: [],
       recent: [{ name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false }],
     } }) } })
     expect(getByText('Ame wo Matsu')).toBeInTheDocument()
@@ -68,7 +68,7 @@ describe('duplicate entries from the APIs', () => {
   it('Music renders a track that appears twice in the recent list', () => {
     const t = { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false }
     const { getAllByText } = render(Music, { props: { state: ready({ lastfm: {
-      total_scrobbles: 2, top_artists: [], top_tracks: [], genres: [], recent: [t, t],
+      total_scrobbles: 2, top_artists: [], recent: [t, t],
     } }) } })
     expect(getAllByText('Ame wo Matsu')).toHaveLength(2)
   })

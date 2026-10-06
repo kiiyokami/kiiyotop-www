@@ -4,13 +4,10 @@ export interface PlayingGame { name: string; app_id: string | null }
 export interface Now        { discord: Presence | null; listening: Track | null; playing: PlayingGame | null }
 
 export interface TopArtist  { name: string; playcount: number }
-export interface TopTrack   { name: string; artist: string; playcount: number }
 export interface Lastfm {
   total_scrobbles: number
   recent: Track[]
   top_artists: TopArtist[]
-  top_tracks: TopTrack[]
-  genres: string[]
 }
 
 export interface RecentGame { app_id: number; name: string; minutes_2weeks: number; minutes_total: number; thumb: string }

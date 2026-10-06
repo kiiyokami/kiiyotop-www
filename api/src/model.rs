@@ -44,20 +44,11 @@ pub struct Lastfm {
     pub total_scrobbles: u64,
     pub recent:          Vec<Track>,
     pub top_artists:     Vec<TopArtist>,
-    pub top_tracks:      Vec<TopTrack>,
-    pub genres:          Vec<String>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
 pub struct TopArtist {
     pub name:      String,
-    pub playcount: u64,
-}
-
-#[derive(Serialize, Debug, PartialEq)]
-pub struct TopTrack {
-    pub name:      String,
-    pub artist:    String,
     pub playcount: u64,
 }
 

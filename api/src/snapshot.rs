@@ -18,7 +18,7 @@ type Fetched<T> = Result<T, AppError>;
 #[allow(clippy::type_complexity)]
 pub fn assemble(
     discord_raw: Fetched<Value>,
-    lastfm_raw:  Fetched<(Value, Value, Value, Vec<String>)>,
+    lastfm_raw:  Fetched<(Value, Value)>,
     steam_raw:   Fetched<(Value, Value, Value, Value)>,
     leetify_raw: Fetched<Value>,
     osu_raw:     Fetched<(Value, Value)>,
@@ -35,8 +35,7 @@ pub fn assemble(
 
     Snapshot {
         now,
-        lastfm: lastfm_ok.map(|(recent, artists, tracks, genres)|
-            lastfm::normalize(&recent, &artists, &tracks, genres)),
+        lastfm: lastfm_ok.map(|(recent, artists)| lastfm::normalize(&recent, &artists)),
         steam: steam_ok.and_then(|(summary, level, friends, recent)|
             steam::normalize(&summary, &level, &friends, &recent)),
         cs2:    leetify_raw.ok().map(|v| leetify::normalize(&v)),
@@ -119,7 +118,7 @@ mod tests {
         let empty = json!({});
         let snap = assemble(
             err(),
-            Ok((recent, empty.clone(), empty.clone(), vec![])),
+            Ok((recent, empty.clone())),
             err(), err(), err(), err(),
         );
         assert_eq!(snap.now.listening.unwrap().name, "Live");
