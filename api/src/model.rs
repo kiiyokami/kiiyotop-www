@@ -31,6 +31,8 @@ pub struct Track {
     pub artist: String,
     pub art:    Option<String>,
     pub live:   bool,
+    /// Unix seconds the scrobble landed. None for a track still playing.
+    pub played_at: Option<u64>,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -110,6 +112,8 @@ pub struct OsuScore {
     pub pp:      u64,
     /// One of: XH, X, SH, S, A, B, C, D.
     pub rank:    String,
+    /// Beatmap difficulty. 0.0 when the beatmap lookup failed.
+    pub stars:   f64,
 }
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -163,9 +167,10 @@ mod tests {
             artist: "Artist".into(),
             art: None,
             live: true,
+            played_at: Some(1790000000),
         };
         assert_eq!(serde_json::to_value(&track).unwrap(), json!({
-            "name": "Song", "artist": "Artist", "art": null, "live": true
+            "name": "Song", "artist": "Artist", "art": null, "live": true, "played_at": 1790000000
         }));
     }
 }

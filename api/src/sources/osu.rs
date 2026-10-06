@@ -35,6 +35,7 @@ pub fn normalize(user: &Value, best: &Value) -> Option<Osu> {
             version: text(&s["version"]),
             pp:      num(&s["pp"]).round() as u64,
             rank:    text(&s["rank"]),
+            stars:   num(&s["stars"]),
         }).collect()).unwrap_or_default(),
     })
 }
@@ -92,6 +93,7 @@ async fn fetch_fresh(client: &reqwest::Client, cache: &Cache) -> Result<(Value, 
             obj.insert("title".into(),   m["title"].clone());
             obj.insert("artist".into(),  m["artist"].clone());
             obj.insert("version".into(), m["version"].clone());
+            obj.insert("stars".into(),   m["difficultyrating"].clone());
         }
         enriched.push(entry);
     }
@@ -134,8 +136,9 @@ mod tests {
         assert_eq!(o.best.len(), 2);
         assert_eq!(o.best[0], crate::model::OsuScore {
             title: "Map Title".into(), artist: "Map Artist".into(),
-            version: "Insane".into(), pp: 413, rank: "SH".into(),
+            version: "Insane".into(), pp: 413, rank: "SH".into(), stars: 6.42,
         });
+        assert_eq!(o.best[1].stars, 0.0, "a score with no difficulty rating reads as 0");
     }
 
     #[test]

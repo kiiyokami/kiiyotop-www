@@ -19,7 +19,8 @@
         "image": [
           { "size": "medium", "#text": "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png" }
         ],
-        "url": "https://example.test/2"
+        "url": "https://example.test/2",
+        "date": { "uts": "1790000000", "#text": "21 Sep 2026, 08:53" }
       }
     ],
     "@attr": { "user": "Kiiyo_", "total": "48213" }

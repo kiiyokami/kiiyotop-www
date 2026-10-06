@@ -30,6 +30,7 @@ fn track_of(track: &Value) -> Track {
         artist: track["artist"]["#text"].as_str().unwrap_or_default().to_string(),
         art: art_of(track),
         live: track["@attr"]["nowplaying"].as_str() == Some("true"),
+        played_at: track["date"]["uts"].as_str().and_then(|s| s.parse().ok()),
     }
 }
 
@@ -94,6 +95,15 @@ mod tests {
         assert_eq!(track.artist, "Live Artist");
         assert_eq!(track.art.as_deref(), Some("https://example.test/m.png"));
         assert!(track.live);
+    }
+
+    #[test]
+    fn tracks_carry_when_they_were_played_and_live_ones_do_not() {
+        let l = normalize(&fixture("lastfm_recent"), &fixture("lastfm_top_artists"));
+        let past = l.recent.iter().find(|t| t.name == "Past Song").unwrap();
+        assert_eq!(past.played_at, Some(1790000000));
+        let live = l.recent.iter().find(|t| t.live).unwrap();
+        assert_eq!(live.played_at, None, "a now-playing track has no scrobble time yet");
     }
 
     #[test]
