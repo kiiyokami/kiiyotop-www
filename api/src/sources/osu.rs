@@ -1,4 +1,5 @@
 use crate::cache::Cache;
+use crate::sources::stale_all;
 use crate::http::{env, get_json, AppError};
 use crate::model::{Osu, OsuScore};
 use serde_json::{json, Value};
@@ -39,6 +40,21 @@ pub fn normalize(user: &Value, best: &Value) -> Option<Osu> {
 }
 
 pub async fn fetch(client: &reqwest::Client, cache: &Cache) -> Result<(Value, Value), AppError> {
+    match fetch_fresh(client, cache).await {
+        Ok(v) => Ok(v),
+        // A failing osu! API serves the last good profile rather than a blank window.
+        Err(e) => match stale_all(cache, ["osu:user", "osu:best"]).await {
+            Some(mut v) => {
+                tracing::warn!(error = %e, "osu failed, serving the last good value");
+                let best = v.pop().unwrap();
+                Ok((v.pop().unwrap(), best))
+            }
+            None => Err(e),
+        },
+    }
+}
+
+async fn fetch_fresh(client: &reqwest::Client, cache: &Cache) -> Result<(Value, Value), AppError> {
     if let (Some(u), Some(b)) = (cache.get("osu:user", TTL).await, cache.get("osu:best", TTL).await) {
         return Ok((u, b));
     }

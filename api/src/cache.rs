@@ -30,6 +30,15 @@ impl Cache {
         Some(entry.value.clone())
     }
 
+    /// Like `get`, but for a value that has already expired: used only when the
+    /// upstream is failing, so a blip does not blank the page. `max_age` is how
+    /// old a value may be and still be better than nothing.
+    pub async fn get_stale(&self, key: &str, max_age: Duration) -> Option<Value> {
+        let map = self.inner.lock().await;
+        let entry = map.get(key)?;
+        (entry.stored_at.elapsed() < max_age).then(|| entry.value.clone())
+    }
+
     pub async fn put(&self, key: &str, value: Value) {
         let mut map = self.inner.lock().await;
         map.insert(key.to_string(), Entry { value, stored_at: Instant::now() });
@@ -77,5 +86,15 @@ mod tests {
         cache.put("b", json!(2)).await;
         assert_eq!(cache.get("a", Duration::from_secs(60)).await, Some(json!(1)));
         assert_eq!(cache.get("b", Duration::from_secs(60)).await, Some(json!(2)));
+    }
+
+    #[tokio::test]
+    async fn get_stale_returns_an_expired_value_up_to_the_limit() {
+        let cache = Cache::new();
+        cache.put("k", json!(1)).await;
+        std::thread::sleep(Duration::from_millis(20));
+        assert_eq!(cache.get("k", Duration::from_millis(5)).await, None, "expired for a fresh read");
+        assert_eq!(cache.get_stale("k", Duration::from_secs(60)).await, Some(json!(1)));
+        assert_eq!(cache.get_stale("k", Duration::from_millis(5)).await, None, "too old even for stale");
     }
 }

@@ -1,4 +1,5 @@
 use crate::cache::Cache;
+use crate::sources::stale_all;
 use crate::http::{env, post_json, AppError};
 use crate::model::{RatedVn, VnEntry, Vndb};
 use serde_json::{json, Value};
@@ -52,6 +53,24 @@ pub fn normalize(reading: &Value, all: &Value, finished: &Value, wishlist: &Valu
 }
 
 pub async fn fetch(
+    client: &reqwest::Client,
+    cache: &Cache,
+) -> Result<(Value, Value, Value, Value), AppError> {
+    match fetch_fresh(client, cache).await {
+        Ok(v) => Ok(v),
+        // A failing VNDB API serves the last good lists rather than a blank window.
+        Err(e) => match stale_all(cache, ["vndb:reading", "vndb:all", "vndb:finished", "vndb:wishlist"]).await {
+            Some(v) => {
+                tracing::warn!(error = %e, "vndb failed, serving the last good value");
+                let mut it = v.into_iter();
+                Ok((it.next().unwrap(), it.next().unwrap(), it.next().unwrap(), it.next().unwrap()))
+            }
+            None => Err(e),
+        },
+    }
+}
+
+async fn fetch_fresh(
     client: &reqwest::Client,
     cache: &Cache,
 ) -> Result<(Value, Value, Value, Value), AppError> {
