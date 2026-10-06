@@ -21,6 +21,10 @@ describe('terminal', () => {
     for (const c of COMMANDS) expect(line).toContain(c)
   })
 
+  it('help lists the commands and nothing about ls', () => {
+    expect(run('help', ctx()).lines.join(' ')).not.toMatch(/then a name|try ls/)
+  })
+
   it('whoami answers with the bio, trimmed and case-insensitive', () => {
     const { lines } = run('  WhoAmI ', ctx())
     expect(lines[0]).toBe('kiiyo, 25, introvert, fps and rhythm games')
@@ -73,7 +77,7 @@ describe('terminal', () => {
   })
 
   it('unknown commands say so and point at help', () => {
-    expect(run('sudo rm -rf /', ctx()).lines).toEqual(['sudo rm -rf /: not found. try ls'])
+    expect(run('sudo rm -rf /', ctx()).lines).toEqual(['sudo rm -rf /: not found'])
   })
 
   it('truncates a very long unknown command in the reply', () => {

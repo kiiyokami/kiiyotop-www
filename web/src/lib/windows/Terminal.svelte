@@ -1,13 +1,14 @@
 <script lang="ts">
   import type { SnapshotState } from '../snapshot'
-  import { ECHO_MAX, PROMPT, SCROLLBACK, append, run, type Action } from '../os/terminal'
+  import { BIO, ECHO_MAX, PROMPT, SCROLLBACK, append, run, type Action } from '../os/terminal'
   import { theme } from '../os/theme'
 
   // Renamed locally: with a binding called `state` in scope, Svelte reads the
   // `$state` rune below as a store subscription to it.
   let { state: snapshot, onaction }: { state: SnapshotState; onaction: (a: Action) => void } = $props()
 
-  let lines = $state<string[]>(['kiiyoOS terminal. type help for commands.'])
+  // The terminal opens on startup, so the bio is the first thing anyone reads.
+  let lines = $state<string[]>([...BIO, '', 'type help for commands.'])
   let input = $state('')
   let log: HTMLDivElement | undefined = $state()
   let field: HTMLInputElement | undefined = $state()

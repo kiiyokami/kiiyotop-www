@@ -18,10 +18,11 @@ async function type(input: HTMLElement, value: string) {
 }
 
 test('runs a command and prints the echo and the output', async () => {
-  const { getByRole, getByText } = render(Terminal, { props: { state, onaction: vi.fn() } })
+  const { getByRole, getByText, getAllByText } = render(Terminal, { props: { state, onaction: vi.fn() } })
   await type(getByRole('textbox', { name: 'terminal command' }), 'whoami')
   expect(getByText('kiiyo@top ~ $ whoami')).toBeInTheDocument()
-  expect(getByText('kiiyo, 25, introvert, fps and rhythm games')).toBeInTheDocument()
+  // Once in the welcome text, once as the command's answer.
+  expect(getAllByText('kiiyo, 25, introvert, fps and rhythm games')).toHaveLength(2)
 })
 
 test('markup typed into the terminal stays inert text', async () => {
@@ -78,4 +79,11 @@ test('up and down walk the commands already run', async () => {
   expect(input.value).toBe('ls')
   await fireEvent.keyDown(input, { key: 'ArrowDown' })
   expect(input.value).toBe('')
+})
+
+test('the bio is the first thing the terminal shows, before anyone types', () => {
+  const { container } = render(Terminal, { props: { state, onaction: vi.fn() } })
+  const text = container.querySelector('.log')?.textContent ?? ''
+  expect(text.startsWith('kiiyo, 25, introvert')).toBe(true)
+  expect(text).toContain('listen to millsage')
 })

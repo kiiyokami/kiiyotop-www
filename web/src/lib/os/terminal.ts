@@ -15,6 +15,12 @@ export interface TermResult { lines: string[]; action?: Action }
 export const PROMPT = 'kiiyo@top ~ $'
 export const SCROLLBACK = 100
 export const ECHO_MAX = 64
+/** kiiyo's own words. Nothing here is invented. */
+export const BIO = [
+  'kiiyo, 25, introvert, fps and rhythm games',
+  '"Live happily." (Subarashiki Hibi, Ludwig Wittgenstein)',
+  'listen to millsage',
+]
 export const COMMANDS = ['help', 'ls', 'whoami', 'now', 'theme', 'tidy', 'clear'] as const
 
 function nowLine(s: SnapshotState): string {
@@ -30,13 +36,8 @@ export function run(input: string, ctx: TermCtx): TermResult {
   const typed = input.trim()
   switch (typed.toLowerCase()) {
     case '':         return { lines: [] }
-    case 'help':     return { lines: [`commands: ${COMMANDS.join('  ')}`, 'ls, then a name to open it'] }
-    // kiiyo's own words. Nothing here is invented.
-    case 'whoami':   return { lines: [
-      'kiiyo, 25, introvert, fps and rhythm games',
-      '"Live happily." (Subarashiki Hibi, Ludwig Wittgenstein)',
-      'listen to millsage',
-    ] }
+    case 'help':     return { lines: [`commands: ${COMMANDS.join('  ')}`] }
+    case 'whoami':   return { lines: BIO }
     case 'now':      return { lines: [nowLine(ctx.snapshot)] }
     case 'ls':       return { lines: [WINDOW_IDS.map((id) => TITLES[id]).join('  ')] }
     case 'theme': {
@@ -50,7 +51,7 @@ export function run(input: string, ctx: TermCtx): TermResult {
       const name = typed.toLowerCase()
       const id = WINDOW_IDS.find((w) => w === name || TITLES[w].toLowerCase() === name)
       if (id) return { lines: [`opened ${TITLES[id]}`], action: { type: 'open', id } }
-      return { lines: [`${typed.slice(0, ECHO_MAX)}: not found. try ls`] }
+      return { lines: [`${typed.slice(0, ECHO_MAX)}: not found`] }
     }
   }
 }
