@@ -47,16 +47,16 @@ describe('terminal', () => {
       .toEqual(["couldn't reach the kiiyo.top server"])
   })
 
-  it('projects and games open their windows', () => {
-    expect(run('projects', ctx())).toEqual({ lines: ['opened projects'], action: { type: 'open', id: 'projects' } })
-    expect(run('games', ctx())).toEqual({ lines: ['opened games'], action: { type: 'open', id: 'games' } })
+  it('ls lists every window and the other sites', () => {
+    const { lines } = run('ls', ctx())
+    expect(lines[0].split(/\s+/)).toEqual(['now.txt', 'music', 'reading', 'projects', 'socials', 'games', 'terminal'])
+    expect(lines.some((l) => l.includes('https://nihon.kiiyo.top'))).toBe(true)
   })
 
-  it('socials prints one line per social', () => {
-    const { lines } = run('socials', ctx())
-    expect(lines).toHaveLength(3)
-    expect(lines[0]).toBe('discord  kiiyo')
-    expect(lines[2]).toContain('https://open.spotify.com/user/')
+  it('a window name opens it, with or without its extension', () => {
+    expect(run('projects', ctx())).toEqual({ lines: ['opened projects'], action: { type: 'open', id: 'projects' } })
+    expect(run('NOW.TXT', ctx())).toEqual({ lines: ['opened now.txt'], action: { type: 'open', id: 'now' } })
+    expect(run('now', ctx()).action).toBeUndefined()
   })
 
   it('theme reports the theme it switches to', () => {
@@ -70,7 +70,7 @@ describe('terminal', () => {
   })
 
   it('unknown commands say so and point at help', () => {
-    expect(run('sudo rm -rf /', ctx()).lines).toEqual(['sudo rm -rf /: command not found. try help'])
+    expect(run('sudo rm -rf /', ctx()).lines).toEqual(['sudo rm -rf /: not found. try ls'])
   })
 
   it('truncates a very long unknown command in the reply', () => {

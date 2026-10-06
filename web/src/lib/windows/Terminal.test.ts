@@ -28,7 +28,7 @@ test('markup typed into the terminal stays inert text', async () => {
   const { getByRole, container } = render(Terminal, { props: { state, onaction: vi.fn() } })
   await type(getByRole('textbox', { name: 'terminal command' }), '<img src=x onerror=alert(1)>')
   expect(container.querySelector('img')).toBeNull()
-  expect(container.textContent).toContain('<img src=x onerror=alert(1)>: command not found')
+  expect(container.textContent).toContain('<img src=x onerror=alert(1)>: not found')
 })
 
 test('forwards window actions to the desktop', async () => {
