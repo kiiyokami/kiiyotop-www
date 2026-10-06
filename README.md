@@ -57,12 +57,6 @@ DISCORD_USER_ID=
 
 VNDB_USER_ID=
 
-# Required for the projects window. Pinned repos come from GitHub's GraphQL
-# API, which rejects unauthenticated requests. A fine-grained token with
-# public read-only access is enough.
-GITHUB_USER=
-GITHUB_TOKEN=
-
 PORT=3000
 ```
 

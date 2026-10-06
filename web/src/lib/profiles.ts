@@ -33,3 +33,10 @@ export const playlists: Profile[] = [
   { label: 'hiro shinosawa', handle: null, url: 'https://open.spotify.com/playlist/0Wxr23KwDM6KAUNbjU0WC9' },
   { label: 'top',            handle: null, url: 'https://open.spotify.com/playlist/1Rnwru5jyplPZRUYPgUgTN' },
 ]
+
+/** Hand-picked, not fetched: two repos, no stars or descriptions to show. */
+export interface Project { name: string; lang: string; blurb: string; url: string }
+export const projects: Project[] = [
+  { name: 'nihongo-notes', lang: 'TypeScript', blurb: 'Japanese notes app, live at nihon.kiiyo.top.', url: 'https://github.com/kiiyokami/nihongo-notes' },
+  { name: 'serverctl',     lang: 'Rust',       blurb: '', url: 'https://github.com/kiiyokami/serverctl' },
+]

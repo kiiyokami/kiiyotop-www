@@ -125,7 +125,7 @@
         {#if id === 'now'}<Now state={snapshot} />
         {:else if id === 'music'}<Music state={snapshot} />
         {:else if id === 'reading'}<Reading state={snapshot} />
-        {:else if id === 'projects'}<Projects state={snapshot} />
+        {:else if id === 'projects'}<Projects />
         {:else if id === 'socials'}<Socials />
         {:else if id === 'games'}<Games state={snapshot} />
         {:else}<Terminal state={snapshot} {onaction} />

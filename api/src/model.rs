@@ -8,7 +8,6 @@ pub struct Snapshot {
     pub cs2:    Option<Cs2>,
     pub osu:    Option<Osu>,
     pub vndb:   Option<Vndb>,
-    pub github: Option<Github>,
 }
 
 #[derive(Serialize, Debug, PartialEq, Default)]
@@ -147,20 +146,6 @@ pub struct RatedVn {
     pub score: f64,
 }
 
-#[derive(Serialize, Debug, PartialEq)]
-pub struct Github {
-    pub pinned: Vec<Repo>,
-}
-
-#[derive(Serialize, Debug, PartialEq)]
-pub struct Repo {
-    pub name:        String,
-    pub description: Option<String>,
-    pub language:    Option<String>,
-    pub stars:       u64,
-    pub url:         String,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -176,8 +161,7 @@ mod tests {
             "steam":  null,
             "cs2":    null,
             "osu":    null,
-            "vndb":   null,
-            "github": null
+            "vndb":   null
         }));
     }
 

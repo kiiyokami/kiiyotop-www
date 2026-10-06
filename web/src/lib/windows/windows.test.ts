@@ -12,7 +12,7 @@ import { SERVER_DOWN } from './notes'
 
 const base: Snapshot = {
   now: { discord: null, listening: null, playing: null },
-  lastfm: null, steam: null, cs2: null, osu: null, vndb: null, github: null,
+  lastfm: null, steam: null, cs2: null, osu: null, vndb: null,
 }
 const ready = (over: Partial<Snapshot> = {}): SnapshotState => ({ status: 'ready', error: null, data: { ...base, ...over } })
 const loading: SnapshotState = { status: 'loading', data: null, error: null }
@@ -195,27 +195,15 @@ describe('Games', () => {
 })
 
 describe('Projects', () => {
-  it('lists pinned repos as links', () => {
-    const { getByRole } = render(Projects, { props: { state: ready({ github: { pinned: [
-      { name: 'kiiyotop-www', description: 'Personal homepage.', language: 'Svelte', stars: 3, url: 'https://github.com/kiiyokami/kiiyotop-www' },
-    ] } }) } })
-    expect(getByRole('link', { name: 'kiiyotop-www' })).toHaveAttribute('href', 'https://github.com/kiiyokami/kiiyotop-www')
+  it('lists the hand-picked projects as links', () => {
+    const { getByRole } = render(Projects, { props: {} })
+    expect(getByRole('link', { name: 'nihongo-notes' })).toHaveAttribute('href', 'https://github.com/kiiyokami/nihongo-notes')
+    expect(getByRole('link', { name: 'serverctl' })).toHaveAttribute('href', 'https://github.com/kiiyokami/serverctl')
   })
 
-  it('never prints "null" or a dangling separator for missing fields', () => {
-    const { container } = render(Projects, { props: { state: ready({ github: { pinned: [
-      { name: 'dotfiles', description: null, language: null, stars: 0, url: 'https://github.com/kiiyokami/dotfiles' },
-    ] } }) } })
-    expect(container.textContent).not.toContain('null')
-    expect(container.querySelector('.meta')?.textContent?.trim()).toBe('★ 0')
-  })
-
-  it('distinguishes nothing pinned from GitHub failing', () => {
-    const empty = render(Projects, { props: { state: ready({ github: { pinned: [] } }) } })
-    expect(empty.getByText('No pinned repos on GitHub.')).toBeInTheDocument()
-    empty.unmount()
-    const failed = render(Projects, { props: { state: ready() } })
-    expect(failed.getByText("Couldn't reach GitHub.")).toBeInTheDocument()
+  it('leaves out a blurb that is not written yet', () => {
+    const { container } = render(Projects, { props: {} })
+    expect(container.querySelectorAll('.desc')).toHaveLength(1)
   })
 })
 

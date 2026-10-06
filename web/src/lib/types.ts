@@ -43,8 +43,6 @@ export interface Vndb {
   wishlist: number; wishlist_more: boolean
 }
 
-export interface Repo { name: string; description: string | null; language: string | null; stars: number; url: string }
-export interface Github { pinned: Repo[] }
 
 export interface Snapshot {
   now: Now
@@ -53,5 +51,4 @@ export interface Snapshot {
   cs2: Cs2 | null
   osu: Osu | null
   vndb: Vndb | null
-  github: Github | null
 }

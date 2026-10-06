@@ -9,7 +9,7 @@ function ready(now: Partial<Now> = {}): SnapshotState {
     error: null,
     data: {
       now: { discord: null, listening: null, playing: null, ...now },
-      lastfm: null, steam: null, cs2: null, osu: null, vndb: null, github: null,
+      lastfm: null, steam: null, cs2: null, osu: null, vndb: null,
     },
   }
 }

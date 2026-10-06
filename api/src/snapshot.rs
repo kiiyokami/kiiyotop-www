@@ -1,7 +1,7 @@
 use crate::cache::Cache;
 use crate::http::AppError;
-use crate::model::{Github, Now, Snapshot};
-use crate::sources::{discord, github, lastfm, leetify, osu, steam, vndb};
+use crate::model::{Now, Snapshot};
+use crate::sources::{discord, lastfm, leetify, osu, steam, vndb};
 use axum::{extract::State, Json};
 use serde_json::Value;
 
@@ -23,7 +23,6 @@ pub fn assemble(
     leetify_raw: Fetched<Value>,
     osu_raw:     Fetched<(Value, Value)>,
     vndb_raw:    Fetched<(Value, Value, Value, Value)>,
-    github:      Fetched<Github>,
 ) -> Snapshot {
     let lastfm_ok = lastfm_raw.ok();
     let steam_ok  = steam_raw.ok();
@@ -44,24 +43,18 @@ pub fn assemble(
         osu:    osu_raw.ok().and_then(|(user, best)| osu::normalize(&user, &best)),
         vndb:   vndb_raw.ok().map(|(reading, all, finished, wishlist)|
             vndb::normalize(&reading, &all, &finished, &wishlist)),
-        github: github.ok(),
     }
 }
 
 pub async fn handler(State(s): State<AppState>) -> Json<Snapshot> {
-    let (discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw, vndb_raw, github_raw) = tokio::join!(
+    let (discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw, vndb_raw) = tokio::join!(
         discord::fetch(&s.client, &s.cache),
         lastfm::fetch(&s.client, &s.cache),
         steam::fetch(&s.client, &s.cache),
         leetify::fetch(&s.client, &s.cache),
         osu::fetch(&s.client, &s.cache),
         vndb::fetch(&s.client, &s.cache),
-        github::fetch(&s.client, &s.cache),
     );
-
-    // Normalizing here, not in assemble(), so a GraphQL error body is logged
-    // like any other source failure.
-    let github_raw = github_raw.and_then(|v| github::normalize(&v));
 
     for (name, failure) in [
         ("discord", discord_raw.as_ref().err()),
@@ -70,14 +63,13 @@ pub async fn handler(State(s): State<AppState>) -> Json<Snapshot> {
         ("leetify", leetify_raw.as_ref().err()),
         ("osu",     osu_raw.as_ref().err()),
         ("vndb",    vndb_raw.as_ref().err()),
-        ("github",  github_raw.as_ref().err()),
     ] {
         if let Some(e) = failure {
             tracing::warn!(source = name, error = %e, "source failed, serving null");
         }
     }
 
-    Json(assemble(discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw, vndb_raw, github_raw))
+    Json(assemble(discord_raw, lastfm_raw, steam_raw, leetify_raw, osu_raw, vndb_raw))
 }
 
 #[cfg(test)]
@@ -92,13 +84,12 @@ mod tests {
 
     #[test]
     fn every_source_failing_still_produces_a_snapshot() {
-        let snap = assemble(err(), err(), err(), err(), err(), err(), err());
+        let snap = assemble(err(), err(), err(), err(), err(), err());
         assert!(snap.lastfm.is_none());
         assert!(snap.steam.is_none());
         assert!(snap.cs2.is_none());
         assert!(snap.osu.is_none());
         assert!(snap.vndb.is_none());
-        assert!(snap.github.is_none());
         assert!(snap.now.discord.is_none());
         assert!(snap.now.listening.is_none());
         assert!(snap.now.playing.is_none());
@@ -111,7 +102,7 @@ mod tests {
             "discord_status": "online", "activities": [], "spotify": null
         }});
         let snap = assemble(
-            Ok(lanyard), err(), err(), err(), err(), err(), err(),
+            Ok(lanyard), err(), err(), err(), err(), err(),
         );
         assert_eq!(snap.now.discord.unwrap().name, "kiiyo");
         assert!(snap.lastfm.is_none(), "the failed sources stay null");
@@ -129,7 +120,7 @@ mod tests {
         let snap = assemble(
             err(),
             Ok((recent, empty.clone(), empty.clone(), vec![])),
-            err(), err(), err(), err(), err(),
+            err(), err(), err(), err(),
         );
         assert_eq!(snap.now.listening.unwrap().name, "Live");
         assert_eq!(snap.lastfm.unwrap().total_scrobbles, 5);

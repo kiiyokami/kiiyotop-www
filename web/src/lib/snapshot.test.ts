@@ -3,7 +3,7 @@ import { get } from 'svelte/store'
 
 const empty = {
   now: { discord: null, listening: null, playing: null },
-  lastfm: null, steam: null, cs2: null, osu: null, vndb: null, github: null,
+  lastfm: null, steam: null, cs2: null, osu: null, vndb: null,
 }
 
 let snapshot: typeof import('./snapshot').snapshot

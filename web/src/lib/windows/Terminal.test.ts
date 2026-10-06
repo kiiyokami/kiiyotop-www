@@ -8,7 +8,7 @@ const state: SnapshotState = {
   error: null,
   data: {
     now: { discord: null, listening: null, playing: null },
-    lastfm: null, steam: null, cs2: null, osu: null, vndb: null, github: null,
+    lastfm: null, steam: null, cs2: null, osu: null, vndb: null,
   },
 }
 
