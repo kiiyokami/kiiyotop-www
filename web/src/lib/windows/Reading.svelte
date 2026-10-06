@@ -24,7 +24,6 @@
           <!-- Keyed by position: two entries can share a title. -->
           {#each d.reading.slice(0, 3) as vn, i (i)}
             <li>
-              <!-- The server withholds covers VNDB voters flag; those get a blank tile. -->
               {#if vn.image}
                 <img class="tile" src={vn.image} alt="" loading="lazy" referrerpolicy="no-referrer" />
               {:else}

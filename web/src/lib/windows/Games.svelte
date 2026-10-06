@@ -68,7 +68,6 @@
   ] : [])
 
   let steamStats = $derived(steam ? [
-    ['Status', steam.state],
     ['Level', String(steam.level)],
     ['Friends', count(steam.friends)],
   ] : [])
@@ -116,6 +115,16 @@
   {:else if (view === 'steam' && !steam) || (view === 'cs2' && !cs2) || (view === 'osu' && !osu)}
     <p class="note">{unreachable(SOURCE[view])}</p>
   {:else}
+    {#if view === 'steam' && steam}
+      <p class="who">
+        {#if steam.avatar}<img src={steam.avatar} alt={steam.persona} width="40" height="40" />{/if}
+        <span>
+          <span class="persona">{steam.persona}</span>
+          <span class="state">{#if steam.state === 'online'}<span class="live" aria-hidden="true"></span>{/if}{steam.state}</span>
+        </span>
+      </p>
+    {/if}
+
     <dl>
       {#each view === 'steam' ? steamStats : view === 'cs2' ? cs2Stats : osuStats as [label, value] (label)}
         <div><dt>{label}</dt><dd class="num">{value}</dd></div>
@@ -193,6 +202,11 @@
     font-size: 0.8125rem;
   }
   dt { color: var(--text-2); }
+
+  .who { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s2); }
+  .who img { border: 1px solid var(--ink); }
+  .persona { display: block; font-size: 0.8125rem; font-weight: 600; }
+  .state { display: block; color: var(--text-2); font-size: 0.75rem; }
 
   .sub { margin: var(--s3) 0 var(--s1); }
   .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

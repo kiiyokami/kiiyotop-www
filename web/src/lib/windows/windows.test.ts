@@ -87,7 +87,7 @@ describe('Reading, with more to show', () => {
     reading: [], rated: [], finished: 0, finished_more: false, wishlist: 0, wishlist_more: false, ...over,
   })
 
-  it('shows a cover when the server sent one and a blank tile when it withheld it', () => {
+  it('shows a cover when VNDB has one and a blank tile when it does not', () => {
     const { container } = render(Reading, { props: { state: ready({ vndb: vndb({ reading: [
       { title: 'Safe One', developer: 'Dev', image: 'https://t.vndb.org/cv/1.jpg' },
       { title: 'Withheld', developer: null, image: null },
@@ -171,6 +171,13 @@ describe('Games', () => {
     expect(getByText('12 / 80 / 200')).toBeInTheDocument()
     expect(getByText('Song A [Insane]')).toBeInTheDocument()
     expect(getByText('Unknown beatmap')).toBeInTheDocument()
+  })
+
+  it('shows the Steam avatar and persona in its details', async () => {
+    const withAvatar = { ...steam, avatar: 'https://avatars.test/kiiyo.jpg' }
+    const { getByRole, getByAltText } = render(Games, { props: { state: ready({ steam: withAvatar }) } })
+    await fireEvent.click(getByRole('button', { name: /^Steam/ }))
+    expect(getByAltText('kiiyo')).toHaveAttribute('src', 'https://avatars.test/kiiyo.jpg')
   })
 
   it('opens Steam details with recently played hours', async () => {
