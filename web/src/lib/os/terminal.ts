@@ -1,5 +1,4 @@
 import type { SnapshotState } from '../snapshot'
-import { sites } from '../profiles'
 import { stageContent } from '../stage'
 import type { Theme } from './theme'
 import { TITLES, WINDOW_IDS, type WinId } from './windows'
@@ -34,10 +33,7 @@ export function run(input: string, ctx: TermCtx): TermResult {
     case 'help':     return { lines: [`commands: ${COMMANDS.join('  ')}`, 'ls, then a name to open it'] }
     case 'whoami':   return { lines: ['kiiyo'] }
     case 'now':      return { lines: [nowLine(ctx.snapshot)] }
-    case 'ls':       return { lines: [
-      WINDOW_IDS.map((id) => TITLES[id]).join('  '),
-      ...sites.map((s) => `${s.label}  ${s.url}`),
-    ] }
+    case 'ls':       return { lines: [WINDOW_IDS.map((id) => TITLES[id]).join('  ')] }
     case 'theme': {
       const next: Theme = ctx.theme === 'dark' ? 'light' : 'dark'
       return { lines: [`theme: ${next}`], action: { type: 'theme' } }

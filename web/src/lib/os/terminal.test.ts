@@ -47,10 +47,10 @@ describe('terminal', () => {
       .toEqual(["couldn't reach the kiiyo.top server"])
   })
 
-  it('ls lists every window and the other sites', () => {
+  it('ls lists the windows and nothing else', () => {
     const { lines } = run('ls', ctx())
+    expect(lines).toHaveLength(1)
     expect(lines[0].split(/\s+/)).toEqual(['now.txt', 'music', 'reading', 'projects', 'socials', 'games', 'terminal'])
-    expect(lines.some((l) => l.includes('https://nihon.kiiyo.top'))).toBe(true)
   })
 
   it('a window name opens it, with or without its extension', () => {
