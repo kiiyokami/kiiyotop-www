@@ -10,6 +10,14 @@
   let lines = $state<string[]>(['kiiyoOS terminal. type help for commands.'])
   let input = $state('')
   let log: HTMLDivElement | undefined = $state()
+  let field: HTMLInputElement | undefined = $state()
+
+  // A real terminal takes the caret wherever you click in it, except when you
+  // are selecting output to copy.
+  function focusField() {
+    if (window.getSelection()?.toString()) return
+    field?.focus()
+  }
 
   function submit(e: SubmitEvent) {
     e.preventDefault()
@@ -32,7 +40,10 @@
   })
 </script>
 
-<div class="term">
+<!-- The input is the keyboard path; this only saves a precise click. -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="term" onclick={focusField}>
   <div class="log" bind:this={log} aria-live="polite">
     {#each lines as line}
       <p>{line}</p>
@@ -41,6 +52,7 @@
   <form onsubmit={submit}>
     <span class="prompt" aria-hidden="true">{PROMPT}</span>
     <input
+      bind:this={field}
       bind:value={input}
       aria-label="terminal command"
       autocomplete="off"

@@ -54,3 +54,9 @@ test('the input empties after each command', async () => {
   await type(input, 'help')
   expect(input.value).toBe('')
 })
+
+test('clicking anywhere in the terminal takes the caret', async () => {
+  const { getByRole, container } = render(Terminal, { props: { state, onaction: vi.fn() } })
+  await fireEvent.click(container.querySelector('.log')!)
+  expect(document.activeElement).toBe(getByRole('textbox', { name: 'terminal command' }))
+})
