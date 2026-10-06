@@ -21,7 +21,7 @@ test('runs a command and prints the echo and the output', async () => {
   const { getByRole, getByText } = render(Terminal, { props: { state, onaction: vi.fn() } })
   await type(getByRole('textbox', { name: 'terminal command' }), 'whoami')
   expect(getByText('kiiyo@top ~ $ whoami')).toBeInTheDocument()
-  expect(getByText('kiiyo')).toBeInTheDocument()
+  expect(getByText('kiiyo, 25, introvert, fps and rhythm games')).toBeInTheDocument()
 })
 
 test('markup typed into the terminal stays inert text', async () => {

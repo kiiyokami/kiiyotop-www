@@ -31,7 +31,12 @@ export function run(input: string, ctx: TermCtx): TermResult {
   switch (typed.toLowerCase()) {
     case '':         return { lines: [] }
     case 'help':     return { lines: [`commands: ${COMMANDS.join('  ')}`, 'ls, then a name to open it'] }
-    case 'whoami':   return { lines: ['kiiyo'] }
+    // kiiyo's own words. Nothing here is invented.
+    case 'whoami':   return { lines: [
+      'kiiyo, 25, introvert, fps and rhythm games',
+      '"Live happily." (Subarashiki Hibi, Ludwig Wittgenstein)',
+      'listen to millsage',
+    ] }
     case 'now':      return { lines: [nowLine(ctx.snapshot)] }
     case 'ls':       return { lines: [WINDOW_IDS.map((id) => TITLES[id]).join('  ')] }
     case 'theme': {

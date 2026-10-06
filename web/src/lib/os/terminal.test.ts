@@ -21,8 +21,11 @@ describe('terminal', () => {
     for (const c of COMMANDS) expect(line).toContain(c)
   })
 
-  it('whoami answers kiiyo, trimmed and case-insensitive', () => {
-    expect(run('  WhoAmI ', ctx()).lines).toEqual(['kiiyo'])
+  it('whoami answers with the bio, trimmed and case-insensitive', () => {
+    const { lines } = run('  WhoAmI ', ctx())
+    expect(lines[0]).toBe('kiiyo, 25, introvert, fps and rhythm games')
+    expect(lines[1]).toContain('Live happily')
+    expect(lines[2]).toBe('listen to millsage')
   })
 
   it('empty input prints nothing and does nothing', () => {
