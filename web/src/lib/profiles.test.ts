@@ -17,8 +17,8 @@ describe('profiles', () => {
     }
   })
 
-  it('lists the four socials in order', () => {
-    expect(socials.map((p) => p.label)).toEqual(['Discord', 'LinkedIn', 'Instagram', 'Spotify'])
+  it('lists the three socials in order', () => {
+    expect(socials.map((p) => p.label)).toEqual(['Discord', 'Instagram', 'Spotify'])
   })
 
   it('uses the Instagram handle with the double i', () => {

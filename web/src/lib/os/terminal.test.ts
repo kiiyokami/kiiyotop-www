@@ -54,9 +54,9 @@ describe('terminal', () => {
 
   it('socials prints one line per social', () => {
     const { lines } = run('socials', ctx())
-    expect(lines).toHaveLength(4)
+    expect(lines).toHaveLength(3)
     expect(lines[0]).toBe('discord  kiiyo')
-    expect(lines[3]).toContain('https://open.spotify.com/user/')
+    expect(lines[2]).toContain('https://open.spotify.com/user/')
   })
 
   it('theme reports the theme it switches to', () => {

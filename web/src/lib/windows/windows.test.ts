@@ -220,10 +220,10 @@ describe('Projects', () => {
 })
 
 describe('Socials', () => {
-  it('links the four socials in order', () => {
+  it('links the three socials in order', () => {
     const { getAllByRole } = render(Socials)
     const links = getAllByRole('link')
-    expect(links.map((a) => a.textContent)).toEqual(['Discord', 'LinkedIn', 'Instagram', 'Spotify'])
+    expect(links.map((a) => a.textContent)).toEqual(['Discord', 'Instagram', 'Spotify'])
     for (const a of links) {
       expect(a.getAttribute('href')).toMatch(/^https:\/\//)
       expect(a).toHaveAttribute('rel', 'noopener')

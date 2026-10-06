@@ -18,7 +18,14 @@ export const profiles = {
   vndb:      { label: 'VNDB',      handle: 'u225866',   url: 'https://vndb.org/u225866' },
 } satisfies Record<string, Profile>
 
-export const socials: Profile[] = [profiles.discord, profiles.linkedin, profiles.instagram, profiles.spotify]
+// No LinkedIn: the work profile lives at work.kiiyo.top, not here.
+export const socials: Profile[] = [profiles.discord, profiles.instagram, profiles.spotify]
+
+/** Other kiiyo sites, shown as desktop link icons. */
+export const sites: Profile[] = [
+  profiles.github,
+  { label: 'nihongo', handle: null, url: 'https://nihon.kiiyo.top' },
+]
 
 // Names as Spotify's public oEmbed reported them on 2026-09-28.
 export const playlists: Profile[] = [

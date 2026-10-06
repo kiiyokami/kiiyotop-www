@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { profiles } from '../profiles'
+  import { sites } from '../profiles'
   import { TITLES, WINDOW_IDS, type WinId } from './windows'
 
   let { onopen }: { onopen: (id: WinId) => void } = $props()
@@ -28,9 +28,11 @@
       <i aria-hidden="true"></i>{TITLES[id]}
     </button>
   {/each}
-  <a class="ic link" href={profiles.github.url} target="_blank" rel="noopener">
-    <i aria-hidden="true"></i>GitHub
-  </a>
+  {#each sites as s (s.url)}
+    <a class="ic link" href={s.url} target="_blank" rel="noopener">
+      <i aria-hidden="true"></i>{s.label}
+    </a>
+  {/each}
 </div>
 
 <style>
