@@ -9,6 +9,7 @@ import Games from './Games.svelte'
 import Projects from './Projects.svelte'
 import Socials from './Socials.svelte'
 import { SERVER_DOWN } from './notes'
+import { HINTS } from '../glossary'
 
 const base: Snapshot = {
   now: { discord: null, listening: null, playing: null },
@@ -21,7 +22,7 @@ const down: SnapshotState = { status: 'error', data: null, error: '502 from the 
 describe('Now', () => {
   it('shows a live track with its artist', () => {
     const { getByText } = render(Now, { props: { state: ready({
-      now: { discord: null, playing: null, listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true } },
+      now: { discord: null, playing: null, listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true, played_at: null } },
     }) } })
     expect(getByText('listening now')).toBeInTheDocument()
     expect(getByText('Ame wo Matsu')).toBeInTheDocument()
@@ -36,6 +37,32 @@ describe('Now', () => {
   it('names the server when the whole API is unreachable', () => {
     const { getByText } = render(Now, { props: { state: down } })
     expect(getByText(SERVER_DOWN)).toBeInTheDocument()
+  })
+})
+
+describe('Now, with more to show', () => {
+  it('shows the album art of a live track', () => {
+    const { container } = render(Now, { props: { state: ready({
+      now: { discord: null, playing: null, listening: { name: 'Song', artist: 'Artist', art: 'https://art.test/a.jpg', live: true, played_at: null } },
+    }) } })
+    expect(container.querySelector('img')).toHaveAttribute('src', 'https://art.test/a.jpg')
+  })
+
+  it('says what was last played, and when, when nothing is on now', () => {
+    const when = Math.floor(Date.now() / 1000) - 2 * 3600 - 30
+    const { getByText } = render(Now, { props: { state: ready({ lastfm: {
+      total_scrobbles: 1, top_artists: [],
+      recent: [{ name: 'Old Song', artist: 'Old Artist', art: null, live: false, played_at: when }],
+    } }) } })
+    expect(getByText('last played: Old Song by Old Artist, 2h ago')).toBeInTheDocument()
+  })
+
+  it('does not claim a last-played time it does not have', () => {
+    const { queryByText } = render(Now, { props: { state: ready({ lastfm: {
+      total_scrobbles: 1, top_artists: [],
+      recent: [{ name: 'Old Song', artist: 'Old Artist', art: null, live: false, played_at: null }],
+    } }) } })
+    expect(queryByText(/last played/)).toBeNull()
   })
 })
 
@@ -58,7 +85,7 @@ describe('Music', () => {
   it('falls back to recent tracks when the chart is empty', () => {
     const { getByText } = render(Music, { props: { state: ready({ lastfm: {
       total_scrobbles: 5, top_artists: [],
-      recent: [{ name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false }],
+      recent: [{ name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false, played_at: null }],
     } }) } })
     expect(getByText('Ame wo Matsu')).toBeInTheDocument()
   })
@@ -66,7 +93,7 @@ describe('Music', () => {
 
 describe('duplicate entries from the APIs', () => {
   it('Music renders a track that appears twice in the recent list', () => {
-    const t = { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false }
+    const t = { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: false, played_at: null }
     const { getAllByText } = render(Music, { props: { state: ready({ lastfm: {
       total_scrobbles: 2, top_artists: [], recent: [t, t],
     } }) } })
@@ -138,8 +165,8 @@ describe('Games', () => {
   ] }
   const osu = { username: '-Flux', pp: 5000, rank: 48120, country_rank: 900, accuracy: 98.1, level: 100, playcount: 31000,
     ss: 12, s: 80, a: 200, best: [
-      { title: 'Song A', artist: 'Artist', version: 'Insane', pp: 310, rank: 'S' },
-      { title: '', artist: '', version: '', pp: 290, rank: 'A' },
+      { title: 'Song A', artist: 'Artist', version: 'Insane', pp: 310, rank: 'S', stars: 6.42 },
+      { title: '', artist: '', version: '', pp: 290, rank: 'A', stars: 0 },
     ] }
   const cs2 = { rating: 1.23, premier: 21088, faceit: 7, aim: 71.2, utility: 45.5, positioning: 60.1,
     opening: 12.5, clutch: 9.8, hs_percent: 44.4, winrate: 52.3, matches: 812 }
@@ -178,6 +205,39 @@ describe('Games', () => {
     const { getByRole, getByAltText } = render(Games, { props: { state: ready({ steam: withAvatar }) } })
     await fireEvent.click(getByRole('button', { name: /^Steam/ }))
     expect(getByAltText('kiiyo')).toHaveAttribute('src', 'https://avatars.test/kiiyo.jpg')
+  })
+
+  it('shows game thumbnails and total hours in Steam details', async () => {
+    const rich = { ...steam, recent: [{ app_id: 1, name: 'GTA V', minutes_2weeks: 600, minutes_total: 9000, thumb: 'https://img.test/gta.jpg' }] }
+    const { getByRole, getByText, container } = render(Games, { props: { state: ready({ steam: rich }) } })
+    await fireEvent.click(getByRole('button', { name: /^Steam/ }))
+    expect(container.querySelector('img[src="https://img.test/gta.jpg"]')).not.toBeNull()
+    expect(getByText('150.0h total')).toBeInTheDocument()
+  })
+
+  it('shows each top play\u2019s star rating, and none when it is unknown', async () => {
+    const { getByRole, getByText, queryByText } = render(Games, { props: { state: ready({ osu }) } })
+    await fireEvent.click(getByRole('button', { name: /^osu!/ }))
+    expect(getByText(/★ 6\.42/)).toBeInTheDocument()
+    expect(queryByText(/★ 0\.00/)).toBeNull()
+  })
+
+  it('draws the three Leetify skill scores as meters', async () => {
+    const { getByRole, getAllByRole } = render(Games, { props: { state: ready({ cs2 }) } })
+    await fireEvent.click(getByRole('button', { name: /^CS2/ }))
+    const meters = getAllByRole('meter')
+    expect(meters).toHaveLength(3)
+    expect(meters[0]).toHaveAttribute('value', '71.2')
+    expect(meters[0]).toHaveAttribute('max', '100')
+  })
+
+  it('explains the stats with hover hints', async () => {
+    const { getByRole, getByTitle } = render(Games, { props: { state: ready({ cs2, osu }) } })
+    await fireEvent.click(getByRole('button', { name: /^CS2/ }))
+    expect(getByTitle(HINTS.Premier)).toBeInTheDocument()
+    await fireEvent.click(getByRole('button', { name: '← games' }))
+    await fireEvent.click(getByRole('button', { name: /^osu!/ }))
+    expect(getByTitle(HINTS.pp)).toBeInTheDocument()
   })
 
   it('opens Steam details with recently played hours', async () => {

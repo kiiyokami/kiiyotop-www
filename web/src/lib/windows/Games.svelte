@@ -2,6 +2,7 @@
   import { tick } from 'svelte'
   import type { SnapshotState } from '../snapshot'
   import { count, decimal, hours, percent } from '../format'
+  import { HINTS } from '../glossary'
   import { profiles } from '../profiles'
   import Skeleton from '../ui/Skeleton.svelte'
   import { SERVER_DOWN, unreachable } from './notes'
@@ -72,6 +73,9 @@
     ['Friends', count(steam.friends)],
   ] : [])
 
+  // The three Leetify skill scores are out of 100, so they read best as bars.
+  const METERS = new Set(['Aim', 'Utility', 'Positioning'])
+
   // osu! reports silver grades separately; people read them as SS and S.
   const grade = (r: string) => (r === 'X' || r === 'XH' ? 'SS' : r === 'SH' ? 'S' : r)
 
@@ -127,7 +131,12 @@
 
     <dl>
       {#each view === 'steam' ? steamStats : view === 'cs2' ? cs2Stats : osuStats as [label, value] (label)}
-        <div><dt>{label}</dt><dd class="num">{value}</dd></div>
+        <div>
+          <dt>{#if HINTS[label]}<abbr title={HINTS[label]}>{label}</abbr>{:else}{label}{/if}</dt>
+          <dd class="num">
+            {#if METERS.has(label)}<meter min="0" max="100" value={Number(value)} aria-label={label}></meter>{/if}{value}
+          </dd>
+        </div>
       {/each}
     </dl>
 
@@ -135,7 +144,12 @@
       <p class="label sub">recently played</p>
       <ul class="plays">
         {#each steam.recent.slice(0, 3) as g, i (i)}
-          <li><span class="name">{g.name}</span> <span class="num">{hours(g.minutes_2weeks)}h</span></li>
+          <li class="game">
+            {#if g.thumb}<img src={g.thumb} alt="" width="92" height="43" loading="lazy" />{/if}
+            <span class="name">{g.name}</span>
+            <span class="num">{hours(g.minutes_2weeks)}h<span class="d2"> in two weeks</span></span>
+            <span class="num d2 total">{hours(g.minutes_total)}h total</span>
+          </li>
         {/each}
       </ul>
     {:else if view === 'osu' && osu && osu.best.length > 0}
@@ -144,7 +158,7 @@
         {#each osu.best.slice(0, 3) as s, i (i)}
           <li>
             <span class="name">{s.title ? `${s.title} [${s.version}]` : 'Unknown beatmap'}</span>
-            <span class="num">{count(s.pp)}pp · {grade(s.rank)}</span>
+            <span class="num">{#if s.stars > 0}<span class="d2">★ {s.stars.toFixed(2)} · </span>{/if}{count(s.pp)}pp · {grade(s.rank)}</span>
           </li>
         {/each}
       </ul>
@@ -209,6 +223,12 @@
   .state { display: block; color: var(--text-2); font-size: 0.75rem; }
 
   .sub { margin: var(--s3) 0 var(--s1); }
+  .d2 { color: var(--text-2); }
+  .game { display: grid !important; grid-template-columns: auto 1fr auto; gap: 0 var(--s3); align-items: center; }
+  .game img { grid-row: span 2; border: 1px solid var(--ink); }
+  .game .total { grid-column: 3; font-size: 0.6875rem; text-align: right; }
+  meter { width: 56px; height: 8px; margin-right: var(--s2); vertical-align: middle; }
+  abbr { text-decoration: underline dotted; text-decoration-color: var(--dot); text-underline-offset: 3px; cursor: help; }
   .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .plays .num { flex: none; color: var(--text-2); }
 

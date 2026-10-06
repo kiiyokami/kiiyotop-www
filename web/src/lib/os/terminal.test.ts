@@ -33,7 +33,7 @@ describe('terminal', () => {
   })
 
   it('now reports a live track', () => {
-    const snap = ready({ listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true } })
+    const snap = ready({ listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true, played_at: null } })
     expect(run('now', ctx({ snapshot: snap })).lines).toEqual(['listening to Ame wo Matsu by Lamp'])
   })
 

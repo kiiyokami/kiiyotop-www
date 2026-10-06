@@ -96,7 +96,7 @@
 </script>
 
 <div class="desktop" class:stacked style:min-height={stacked ? null : `${deskH}px`}>
-  <MenuBar ontidy={() => apply(initial(width))} />
+  <MenuBar ontidy={() => apply(initial(width))} updatedAt={snapshot.updatedAt} offline={snapshot.status === 'ready' && snapshot.error !== null} />
 
   <main class="area">
     {#if !stacked}

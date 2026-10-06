@@ -1,5 +1,5 @@
 export interface Presence   { name: string; status: 'online' | 'idle' | 'dnd' | 'offline'; activity: string | null }
-export interface Track      { name: string; artist: string; art: string | null; live: boolean }
+export interface Track      { name: string; artist: string; art: string | null; live: boolean; played_at: number | null }
 export interface PlayingGame { name: string; app_id: string | null }
 export interface Now        { discord: Presence | null; listening: Track | null; playing: PlayingGame | null }
 
@@ -24,7 +24,7 @@ export interface Cs2 {
   hs_percent: number; winrate: number; matches: number
 }
 
-export interface OsuScore { title: string; artist: string; version: string; pp: number; rank: string }
+export interface OsuScore { title: string; artist: string; version: string; pp: number; rank: string; stars: number }
 export interface Osu {
   username: string; pp: number; rank: number; country_rank: number
   accuracy: number; level: number; playcount: number

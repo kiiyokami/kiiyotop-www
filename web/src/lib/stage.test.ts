@@ -7,7 +7,7 @@ const empty: Now = { discord: null, listening: null, playing: null }
 test('a live track takes the stage', () => {
   const now: Now = {
     ...empty,
-    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true },
+    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true, played_at: null },
   }
   const c = stageContent(now)
   expect(c.label).toBe('listening now')
@@ -27,7 +27,7 @@ test('a game takes the stage when nothing is playing musically', () => {
 test('a track outranks a game, because music is the finer-grained signal', () => {
   const now: Now = {
     discord: null,
-    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true },
+    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true, played_at: null },
     playing: { name: 'Counter-Strike 2', app_id: '730' },
   }
   expect(stageContent(now).headline).toBe('Ame wo Matsu')
@@ -36,7 +36,7 @@ test('a track outranks a game, because music is the finer-grained signal', () =>
 test('a non-live scrobble is history, not the stage', () => {
   const now: Now = {
     ...empty,
-    listening: { name: 'Old Song', artist: 'Lamp', art: null, live: false },
+    listening: { name: 'Old Song', artist: 'Lamp', art: null, live: false, played_at: null },
   }
   const c = stageContent(now)
   expect(c.empty).toBe(true)
@@ -58,7 +58,7 @@ test('a null now, meaning the whole fetch failed, reads the same as empty', () =
 test('the context line carries only facts that exist', () => {
   const now: Now = {
     discord: { name: 'kiiyo', status: 'online', activity: 'Counter-Strike 2' },
-    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true },
+    listening: { name: 'Ame wo Matsu', artist: 'Lamp', art: null, live: true, played_at: null },
     playing: { name: 'Counter-Strike 2', app_id: '730' },
   }
   const c = stageContent(now)

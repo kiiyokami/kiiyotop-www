@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { clock, count, hours, percent, decimal } from './format'
+import { ago, clock, count, hours, percent, decimal } from './format'
 
 describe('count', () => {
   it('groups thousands', () => {
@@ -40,5 +40,18 @@ describe('clock', () => {
   })
   it('pads hours and minutes', () => {
     expect(clock(new Date(2026, 0, 4, 9, 5)).time).toBe('09:05')
+  })
+})
+
+describe('ago', () => {
+  it('reads recent times in plain words', () => {
+    expect(ago(3)).toBe('just now')
+    expect(ago(59)).toBe('just now')
+    expect(ago(60)).toBe('1m ago')
+    expect(ago(3 * 3600 + 5)).toBe('3h ago')
+    expect(ago(2 * 86400)).toBe('2d ago')
+  })
+  it('never goes negative when the clocks disagree', () => {
+    expect(ago(-40)).toBe('just now')
   })
 })

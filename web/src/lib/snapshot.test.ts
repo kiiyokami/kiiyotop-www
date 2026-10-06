@@ -32,6 +32,28 @@ describe('snapshot store', () => {
     stop()
   })
 
+  it('records when the last good snapshot arrived, and keeps that time through a failed poll', async () => {
+    vi.setSystemTime(new Date('2026-10-07T12:00:00Z'))
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(empty) })
+      .mockRejectedValueOnce(new Error('offline'))
+    vi.stubGlobal('fetch', fetchMock)
+
+    const stop = startPolling()
+    await vi.waitFor(() => expect(get(snapshot).status).toBe('ready'))
+    const arrived = get(snapshot).updatedAt
+    const base = new Date('2026-10-07T12:00:00Z').getTime()
+    // waitFor ticks the fake clock a little while it polls.
+    expect(arrived).toBeGreaterThanOrEqual(base)
+    expect(arrived).toBeLessThan(base + 1000)
+
+    await vi.advanceTimersByTimeAsync(30_000)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+    expect(get(snapshot).updatedAt).toBe(arrived)
+    expect(get(snapshot).error).toBe('offline')
+    stop()
+  })
+
   it('records an error when the request fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
     const stop = startPolling()

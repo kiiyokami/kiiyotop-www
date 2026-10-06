@@ -29,6 +29,23 @@ describe('MenuBar', () => {
   })
 })
 
+describe('MenuBar freshness', () => {
+  it('says how old the data is', () => {
+    const { getByText } = render(MenuBar, { props: { ontidy: vi.fn(), updatedAt: Date.now() - 120_000 } })
+    expect(getByText('updated 2m ago')).toBeInTheDocument()
+  })
+
+  it('says so when the last poll failed and shows how old the shown data is', () => {
+    const { getByText } = render(MenuBar, { props: { ontidy: vi.fn(), updatedAt: Date.now() - 3 * 3_600_000, offline: true } })
+    expect(getByText('offline, data from 3h ago')).toBeInTheDocument()
+  })
+
+  it('shows nothing before the first snapshot lands', () => {
+    const { container } = render(MenuBar, { props: { ontidy: vi.fn() } })
+    expect(container.querySelector('.fresh')).toBeNull()
+  })
+})
+
 describe('Taskbar', () => {
   it('lists every window in order and marks hidden ones for screen readers', () => {
     const os = minimize(initial(1300), 'music')

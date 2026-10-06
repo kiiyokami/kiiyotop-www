@@ -5,6 +5,8 @@ export interface SnapshotState {
   status: 'loading' | 'ready' | 'error'
   data: Snapshot | null
   error: string | null
+  /** When the last good snapshot arrived (ms since the epoch). */
+  updatedAt?: number
 }
 
 const POLL_MS = 30_000
@@ -18,11 +20,12 @@ async function load() {
     const res = await fetch('/api/snapshot')
     if (!res.ok) throw new Error(`${res.status} from the API`)
     const data = (await res.json()) as Snapshot
-    store.set({ status: 'ready', data, error: null })
+    store.set({ status: 'ready', data, error: null, updatedAt: Date.now() })
   } catch (e) {
     // A failed poll keeps the last good data on screen: a dropped request
     // should not blank a page that was already showing something true.
     store.update((s) => ({
+      ...s,
       status: s.data ? 'ready' : 'error',
       data: s.data,
       error: e instanceof Error ? e.message : 'could not reach the API',
