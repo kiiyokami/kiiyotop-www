@@ -9,7 +9,7 @@ function setup(over: Record<string, unknown> = {}) {
   const props = {
     id: 'music' as const,
     title: 'music',
-    win: { x: 100, y: 50, w: 300, h: 200, hidden: false, max: false, docked: true, fit: false },
+    win: { x: 100, y: 50, w: 300, h: 200, hidden: false, max: false, fit: false },
     z: 3,
     focused: false,
     stacked: false,
@@ -39,7 +39,7 @@ test('controls are labelled buttons wired to their handlers', async () => {
 })
 
 test('the maximize control offers restore when maximized', () => {
-  const { getByRole } = setup({ win: { x: 0, y: 0, w: 300, h: 200, hidden: false, max: true, docked: true, fit: false } })
+  const { getByRole } = setup({ win: { x: 0, y: 0, w: 300, h: 200, hidden: false, max: true, fit: false } })
   expect(getByRole('button', { name: 'Restore music' })).toBeInTheDocument()
 })
 
@@ -61,7 +61,7 @@ test('stacked mode drops maximize, ignores double-click and drag', async () => {
 })
 
 test('a hidden window carries the hidden attribute', () => {
-  const { container } = setup({ win: { x: 0, y: 0, w: 300, h: 200, hidden: true, max: false, docked: true, fit: false } })
+  const { container } = setup({ win: { x: 0, y: 0, w: 300, h: 200, hidden: true, max: false, fit: false } })
   expect(container.querySelector('section')).toHaveAttribute('hidden')
 })
 
@@ -101,7 +101,7 @@ test('focus entering the window brings it to front', async () => {
 })
 
 test('a fitted window leaves its height to its content, capped by the space left', () => {
-  const { container } = setup({ win: { x: 100, y: 50, w: 300, h: 200, hidden: false, max: false, docked: true, fit: true } })
+  const { container } = setup({ win: { x: 100, y: 50, w: 300, h: 200, hidden: false, max: false, fit: true } })
   const section = container.querySelector('section') as HTMLElement
   expect(section.style.height).toBe('')
   expect(section.style.maxHeight).toBe('500px')

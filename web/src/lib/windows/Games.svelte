@@ -147,8 +147,9 @@
           <li class="game">
             {#if g.thumb}<img src={g.thumb} alt="" width="92" height="43" loading="lazy" />{/if}
             <span class="name">{g.name}</span>
-            <span class="num">{hours(g.minutes_2weeks)}h<span class="d2"> in two weeks</span></span>
             <span class="num d2 total">{hours(g.minutes_total)}h total</span>
+            <!-- A space between text and element survives; one at the start of an element is trimmed. -->
+            <span class="num recent">{hours(g.minutes_2weeks)}h <span class="d2">in two weeks</span></span>
           </li>
         {/each}
       </ul>
@@ -224,9 +225,12 @@
 
   .sub { margin: var(--s3) 0 var(--s1); }
   .d2 { color: var(--text-2); }
-  .game { display: grid !important; grid-template-columns: auto 1fr auto; gap: 0 var(--s3); align-items: center; }
-  .game img { grid-row: span 2; border: 1px solid var(--ink); }
-  .game .total { grid-column: 3; font-size: 0.6875rem; text-align: right; }
+  /* Thumbnail | name over total hours | this fortnight, centred on the row. */
+  .game { display: grid !important; grid-template-columns: auto 1fr auto; gap: 0 var(--s3); align-items: center; padding: var(--s1) 0 !important; }
+  .game img { grid-area: 1 / 1 / 3 / 2; border: 1px solid var(--ink); }
+  .game .name { grid-area: 1 / 2; align-self: end; }
+  .game .total { grid-area: 2 / 2; align-self: start; font-size: 0.6875rem; }
+  .game .recent { grid-area: 1 / 3 / 3 / 4; text-align: right; white-space: nowrap; }
   meter { width: 56px; height: 8px; margin-right: var(--s2); vertical-align: middle; }
   abbr { text-decoration: underline dotted; text-decoration-color: var(--dot); text-underline-offset: 3px; cursor: help; }
   .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

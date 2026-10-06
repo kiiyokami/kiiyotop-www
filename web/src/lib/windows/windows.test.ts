@@ -285,3 +285,14 @@ describe('Socials', () => {
     }
   })
 })
+
+describe('Games rows', () => {
+  it('keeps a space between the hours and "in two weeks"', async () => {
+    const rich = { persona: 'k', avatar: '', state: 'online' as const, level: 1, friends: 1, recent: [
+      { app_id: 1, name: 'GTA V', minutes_2weeks: 600, minutes_total: 9000, thumb: '' },
+    ] }
+    const { getByRole, container } = render(Games, { props: { state: ready({ steam: rich }) } })
+    await fireEvent.click(getByRole('button', { name: /^Steam/ }))
+    expect(container.querySelector('.recent')?.textContent).toBe('10.0h in two weeks')
+  })
+})

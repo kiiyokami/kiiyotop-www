@@ -20,7 +20,7 @@
     onmove: (x: number, y: number) => void
     onresize: (w: number, h: number) => void
     onsettle: () => void
-    /** Reports the rendered height, so docked windows below can stack under it. */
+    /** Reports the rendered height, so a fitted window can be drawn at it. */
     onmeasure: (h: number) => void
     /** The room left below this window's top edge; caps a fitted window. */
     maxH: number
