@@ -37,6 +37,7 @@ export const playlists: Profile[] = [
 /** Hand-picked, not fetched: two repos, no stars or descriptions to show. */
 export interface Project { name: string; lang: string; blurb: string; url: string }
 export const projects: Project[] = [
-  { name: 'nihongo-notes', lang: 'TypeScript', blurb: 'Japanese notes app, live at nihon.kiiyo.top.', url: 'https://github.com/kiiyokami/nihongo-notes' },
-  { name: 'serverctl',     lang: 'Rust',       blurb: '', url: 'https://github.com/kiiyokami/serverctl' },
+  // Blurbs taken from each repo's own README.
+  { name: 'nihongo-notes', lang: 'TypeScript', blurb: 'Minna no Nihongo study app: lessons, flashcards and quizzes, offline. Live at nihon.kiiyo.top.', url: 'https://github.com/kiiyokami/nihongo-notes' },
+  { name: 'serverctl',     lang: 'Rust',       blurb: 'Create, start and stop game servers from Discord slash commands, no sysadmin needed.', url: 'https://github.com/kiiyokami/serverctl' },
 ]

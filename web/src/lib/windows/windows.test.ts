@@ -201,9 +201,9 @@ describe('Projects', () => {
     expect(getByRole('link', { name: 'serverctl' })).toHaveAttribute('href', 'https://github.com/kiiyokami/serverctl')
   })
 
-  it('leaves out a blurb that is not written yet', () => {
+  it('shows a blurb for each project', () => {
     const { container } = render(Projects, { props: {} })
-    expect(container.querySelectorAll('.desc')).toHaveLength(1)
+    expect(container.querySelectorAll('.desc')).toHaveLength(2)
   })
 })
 
